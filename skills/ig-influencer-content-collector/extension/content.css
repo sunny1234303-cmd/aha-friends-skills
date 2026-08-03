@@ -1,0 +1,191 @@
+/* Instagram Image Saver - Content Styles */
+
+.ig-saver-btn-container {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+.ig-saver-btn {
+  background: rgba(0, 0, 0, 0.55) !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.18s ease, transform 0.12s ease !important;
+  padding: 0 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3) !important;
+}
+
+.ig-saver-btn:hover {
+  background: rgba(0, 0, 0, 0.8) !important;
+  transform: scale(1.08) !important;
+}
+
+.ig-saver-btn:disabled {
+  cursor: default !important;
+  opacity: 0.7 !important;
+}
+
+.ig-saver-icon {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  color: #fff !important;
+  font-style: normal !important;
+  user-select: none !important;
+}
+
+/* Toast notification */
+.ig-saver-toast {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(10px) !important;
+  background: rgba(0, 0, 0, 0.82) !important;
+  color: #fff !important;
+  padding: 10px 22px !important;
+  border-radius: 22px !important;
+  z-index: 999999 !important;
+  font-size: 14px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  white-space: nowrap !important;
+  opacity: 0 !important;
+  transition: opacity 0.22s ease, transform 0.22s ease !important;
+  pointer-events: none !important;
+}
+
+.ig-saver-toast-visible {
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+/* Low-res modal overlay */
+.ig-saver-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.65) !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ig-saver-modal {
+  background: #fff !important;
+  border-radius: 14px !important;
+  padding: 24px !important;
+  max-width: 440px !important;
+  width: 92% !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22) !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+.ig-saver-modal-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #111 !important;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+}
+
+.ig-saver-modal-desc {
+  font-size: 13px !important;
+  color: #666 !important;
+  margin: 0 0 18px !important;
+  padding: 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* Thumbnail grid */
+.ig-saver-thumb-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  justify-content: center !important;
+  margin-bottom: 20px !important;
+  max-height: 260px !important;
+  overflow-y: auto !important;
+}
+
+.ig-saver-thumb-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.ig-saver-thumb {
+  width: 82px !important;
+  height: 82px !important;
+  object-fit: cover !important;
+  border-radius: 8px !important;
+  border: 1px solid #e0e0e0 !important;
+  background: #f5f5f5 !important;
+}
+
+.ig-saver-thumb-label {
+  font-size: 11px !important;
+  color: #999 !important;
+}
+
+/* Modal buttons */
+.ig-saver-modal-btns {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.ig-saver-btn-primary,
+.ig-saver-btn-secondary,
+.ig-saver-btn-cancel {
+  width: 100% !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 11px 16px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: opacity 0.15s !important;
+}
+
+.ig-saver-btn-primary {
+  background: #0095f6 !important;
+  color: #fff !important;
+}
+
+.ig-saver-btn-primary:hover {
+  opacity: 0.88 !important;
+}
+
+.ig-saver-btn-secondary {
+  background: #f0f2f5 !important;
+  color: #333 !important;
+}
+
+.ig-saver-btn-secondary:hover {
+  background: #e4e6ea !important;
+}
+
+.ig-saver-btn-secondary:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+
+.ig-saver-btn-cancel {
+  background: none !important;
+  color: #888 !important;
+  font-weight: 400 !important;
+}
+
+.ig-saver-btn-cancel:hover {
+  color: #444 !important;
+}

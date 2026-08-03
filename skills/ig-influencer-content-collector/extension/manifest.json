@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Instagram Image Saver",
+  "version": "1.0",
+  "description": "인스타그램 피드 게시물 이미지를 최고 해상도로 자동 저장합니다",
+  "permissions": ["downloads", "storage"],
+  "host_permissions": ["*://*.instagram.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.instagram.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
