@@ -36,3 +36,9 @@ allowed-tools: Bash
 ## 참고
 
 이 저장소를 포크한 뒤 `extension/` 폴더를 그대로 크롬에 로드해서 쓸 수 있다. 다른 SNS 플랫폼(인스타그램 외)에 적용하려면 `content.js`의 DOM 선택자·해상도 추출 로직을 해당 사이트 구조에 맞게 수정하면 된다.
+
+### 함께 쓰면 좋은 오픈소스
+
+[Instagram Followers Count Scraper](https://apify.com/apify/instagram-followers-count-scraper) — Apify의 Actor. 자사·경쟁사 인스타그램 계정 여러 개(배열 입력)의 팔로워·팔로잉 수를 한 번에 추출하고, 스케줄 실행을 걸면 일별 추이까지 추적할 수 있다. 이벤트 기반 과금($1.30/1,000 프로필), 무료 체험 제공. 이 스킬이 다루는 "게시물 원본 수집" 범위 밖의 지표(팔로워 수 추이)를 자동화하고 싶을 때 함께 쓰면 된다.
+
+부수적으로 [Apify Actors/Tasks 콘솔](https://console.apify.com/actors/tasks)에서 이런 Actor들을 예약 실행·모니터링하도록 조합할 수도 있다 — 팔로워 수 외에 다른 API 기반 자동화가 필요할 때 참고.
