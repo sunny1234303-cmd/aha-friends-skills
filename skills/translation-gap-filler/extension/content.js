@@ -230,11 +230,17 @@
     if (msg?.type === "BEONYEOGI_TOGGLE") {
       if (active) stop();
       else start();
+      // 껐다 켠 상태를 저장해서, 탭을 전환하거나 새로고침해도 다시
+      // 제멋대로 켜지지 않고 사용자가 마지막으로 선택한 상태를 유지한다.
+      chrome.storage.local.set({ beonyeogiEnabled: active });
       sendResponse({ active });
     } else if (msg?.type === "BEONYEOGI_STATUS") {
       sendResponse({ active });
     }
   });
 
-  start(); // 페이지 열리면 자동 시작 (필요하면 팝업/단축키로 끌 수 있음)
+  // 저장된 설정이 없으면(처음 설치 등) 기본값은 켜짐.
+  chrome.storage.local.get({ beonyeogiEnabled: true }, (result) => {
+    if (result.beonyeogiEnabled) start();
+  });
 })();
