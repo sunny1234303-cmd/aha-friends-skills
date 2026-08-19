@@ -177,37 +177,37 @@
     return location.pathname === "/watch" || location.pathname.startsWith("/embed/");
   }
 
-  let ccAttempted = false;
   let ytNavListenerAdded = false;
 
-  function tryEnableYouTubeCaptions() {
+  // 버튼을 "찾았다"와 "실제로 켜졌다"는 다르다 — 유튜브 플레이어는 컨트롤바
+  // DOM(스켈레톤)이 실제 클릭 핸들러가 붙기 전에 먼저 나타나기도 해서, 너무
+  // 이른 시점의 클릭은 씹힐 수 있다. 그래서 클릭 한 번으로 끝내지 않고,
+  // aria-pressed가 실제로 "true"가 될 때까지 재시도한다.
+  function tryEnableYouTubeCaptionsOnce() {
     const btn = document.querySelector(".ytp-subtitles-button");
     if (!btn) return false;
-    if (btn.getAttribute("aria-pressed") !== "true") btn.click();
-    return true;
+    if (btn.getAttribute("aria-pressed") === "true") return true;
+    btn.click();
+    return false;
+  }
+
+  function pollUntilCaptionsOn() {
+    if (tryEnableYouTubeCaptionsOnce()) return;
+    const poll = setInterval(() => {
+      if (tryEnableYouTubeCaptionsOnce()) clearInterval(poll);
+    }, 500);
+    setTimeout(() => clearInterval(poll), 15000); // 플레이어가 안 뜨면 포기
   }
 
   function watchYouTubeCaptions() {
     if (!isYouTubePlayerPage()) return;
-
-    const attempt = () => {
-      if (ccAttempted) return;
-      if (tryEnableYouTubeCaptions()) ccAttempted = true;
-    };
-
-    attempt();
-    const poll = setInterval(() => {
-      attempt();
-      if (ccAttempted) clearInterval(poll);
-    }, 500);
-    setTimeout(() => clearInterval(poll), 15000); // 플레이어가 안 뜨면 포기
+    pollUntilCaptionsOn();
 
     if (!ytNavListenerAdded) {
       ytNavListenerAdded = true;
       // 유튜브는 SPA라 다른 영상으로 넘어가도 페이지가 새로 로드되지 않음
       document.addEventListener("yt-navigate-finish", () => {
-        ccAttempted = false;
-        setTimeout(attempt, 800);
+        setTimeout(pollUntilCaptionsOn, 800);
       });
     }
   }

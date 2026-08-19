@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "번역이 — 놓친 번역 채우기",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Chrome 자동 번역이 놓친 부분(동적 콘텐츠, iframe, 언어 감지 실패, 유튜브 자막)을 보완해서 자동으로 번역합니다.",
   "icons": {
     "16": "icons/icon16.png",
