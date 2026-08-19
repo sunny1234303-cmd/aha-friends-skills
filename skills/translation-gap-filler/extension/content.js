@@ -79,6 +79,11 @@
     if (!text || !text.trim()) return false;
     if (HANGUL_RE.test(text)) return false; // 이미 한국어 포함 → 건너뜀
     if (!LATIN_RE.test(text)) return false; // 영문자 없는 텍스트(숫자·기호만)는 스킵
+    // 커서 반응형 타이포그래피 등에서 단어를 글자 하나씩 별도 <span>으로 쪼개
+    // 렌더링하는 경우가 흔한데, 그 한 글자짜리 노드를 개별로 번역 요청하면
+    // Google 번역이 "알파벳 이름 읽기"로 응답해 글자수프가 된다
+    // (예: T→티, A→에이, I→나, &→그리고). 단어 단위가 아닌 한 글자는 건너뜀.
+    if (text.trim().length === 1) return false;
 
     const parent = node.parentElement;
     if (!parent) return false;
