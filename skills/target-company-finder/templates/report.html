@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>타겟 기업 후보 리스트</title>
+<!--
+  범용 기본 템플릿. 프로젝트에 이미 디자인 가이드(design-guide.md 등)가 있으면
+  이 템플릿을 쓰지 말고 그 토큰을 그대로 적용해서 새로 만들 것.
+
+  채워 넣을 자리: {{ }} 로 표시된 부분과, <!-- 반복 --> 주석이 붙은 블록.
+-->
+<style>
+  :root {
+    --bg: #FAFAF9;
+    --text: #1A1A1A;
+    --text-muted: #767672;
+    --border: #222222;
+    --border-thin: #DEDDD8;
+    --accent: #2D5B4A; /* 임의 포인트 컬러 — 프로젝트 톤에 맞게 교체 */
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Pretendard', sans-serif;
+    --max-width: 1080px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font); line-height: 1.6; font-size: 14px;
+  }
+  .container { max-width: var(--max-width); margin: 0 auto; padding: 0 32px; }
+  @media (max-width: 767px) { .container { padding: 0 16px; } }
+
+  header { border-bottom: 2px solid var(--border); padding: 56px 0 28px; }
+  header .eyebrow { font-size: 13px; color: var(--text-muted); margin: 0 0 10px; }
+  header h1 { font-size: 30px; font-weight: 600; margin: 0 0 12px; }
+  header .meta { font-size: 13px; color: var(--text-muted); }
+
+  section { padding: 48px 0; border-bottom: 1px solid var(--border-thin); }
+  section:last-of-type { border-bottom: none; }
+  section h2 { font-size: 20px; font-weight: 600; margin: 0 0 20px; }
+  h3.subhead { font-size: 15px; font-weight: 600; margin: 28px 0 12px; }
+
+  .rank-card { padding: 14px 0; border-bottom: 1px solid var(--border-thin); }
+  .rank-card:last-child { border-bottom: none; }
+  .rank-card .name { font-weight: 600; margin-right: 8px; }
+  .rank-card p { margin: 6px 0 0; font-size: 13.5px; }
+  .rank-card p.muted { color: var(--text-muted); }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border: 1.5px solid; vertical-align: middle;
+  }
+  .badge--pass { color: var(--accent); border-color: var(--accent); }
+  .badge--watch { color: var(--text-muted); border-color: var(--text-muted); }
+  .badge--fail { color: var(--text-muted); border-color: var(--border-thin); text-decoration: line-through; }
+
+  .table-wrap { overflow-x: auto; margin: 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+  thead th {
+    text-align: left; font-size: 12px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.03em;
+    border-bottom: 2px solid var(--border); padding: 0 14px 10px 0;
+  }
+  tbody td { padding: 12px 14px 12px 0; border-bottom: 1px solid var(--border-thin); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.company { font-weight: 600; white-space: nowrap; }
+
+  ul.flat-list { list-style: none; margin: 0; padding: 0; }
+  ul.flat-list li { padding: 10px 0; border-bottom: 1px solid var(--border-thin); font-size: 13.5px; }
+  ul.flat-list li:last-child { border-bottom: none; }
+
+  footer { padding: 32px 0 56px; font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <p class="eyebrow">{{ 사용자명 또는 프로젝트명 }} · 타겟 기업 리서치</p>
+    <h1>타겟 기업 후보 리스트</h1>
+    <p class="meta">기준 문서: {{ 기준 문서 파일명 }} · 조사일 {{ YYYY-MM-DD }}</p>
+  </header>
+
+  <!-- Executive Summary -->
+  <section>
+    <h2>종합 요약</h2>
+
+    <h3 class="subhead">1순위</h3>
+    <!-- 반복: 후보마다 하나씩 -->
+    <div class="rank-card">
+      <span class="name">{{ 회사명 }}</span><span class="badge badge--pass">PASS</span>
+      <p>{{ 핵심 근거 요약 }}</p>
+    </div>
+
+    <h3 class="subhead">조건부 후보</h3>
+    <div class="rank-card">
+      <span class="name">{{ 회사명 }}</span><span class="badge badge--watch">WATCH</span>
+      <p class="muted">{{ 무엇이 미확인인지 }}</p>
+    </div>
+
+    <h3 class="subhead">하향 / 보류 (정정 이력)</h3>
+    <ul class="flat-list">
+      <li><b>{{ 회사명 }}</b> — ⚠️ {{ 최초 판정과 뒤집힌 이유 }}</li>
+    </ul>
+
+    <h3 class="subhead">탈락 확정</h3>
+    <ul class="flat-list">
+      <li>{{ 회사명(사유) }}, {{ 회사명(사유) }} ...</li>
+    </ul>
+
+    <h3 class="subhead">검증 불가 영역</h3>
+    <ul class="flat-list">
+      <li>{{ 공개 검색으로 확인 안 되는 항목들 — 직접 확인 필요 }}</li>
+    </ul>
+  </section>
+
+  <!-- 상세 근거 (카테고리/축별로 반복) -->
+  <section>
+    <h2>상세 근거</h2>
+
+    <h3 class="subhead">{{ 카테고리 또는 조사 축 이름 }}</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>기업</th><th>판정</th><th>근거</th></tr></thead>
+        <tbody>
+          <!-- 반복 -->
+          <tr>
+            <td class="company">{{ 회사명 }}</td>
+            <td><span class="badge badge--pass">PASS</span></td>
+            <td>{{ 근거 문장 + (출처: url) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    원본 리서치 문서: {{ 원본 md 파일명 }}
+  </footer>
+
+</div>
+</body>
+</html>
