@@ -27,19 +27,43 @@ function releaseSlot() {
   }
 }
 
+const REQUEST_TIMEOUT_MS = 4000;
+
+// 요청이 멈춰버리면(무료 비공식 엔드포인트라 버스트 시 응답이 느려질 수 있음)
+// 전역 세마포어 슬롯을 무한정 붙잡아 뒤에 대기 중인 다른 청크들까지 줄줄이
+// 밀리는 문제가 있었다. AbortController로 상한을 둬서 슬롯이 반드시 풀리게 한다.
+async function fetchWithTimeout(url, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function translateRequest(text) {
+  const url =
+    "https://translate.googleapis.com/translate_a/single" +
+    "?client=gtx&sl=auto&tl=ko&dt=t&q=" +
+    encodeURIComponent(text);
+  const res = await fetchWithTimeout(url, REQUEST_TIMEOUT_MS);
+  if (!res.ok) throw new Error("translate http " + res.status);
+  const data = await res.json();
+  return data[0].map((seg) => seg[0]).join("");
+}
+
 async function translateOne(text) {
   if (cache.has(text)) return cache.get(text);
 
   await acquireSlot();
   try {
-    const url =
-      "https://translate.googleapis.com/translate_a/single" +
-      "?client=gtx&sl=auto&tl=ko&dt=t&q=" +
-      encodeURIComponent(text);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("translate http " + res.status);
-    const data = await res.json();
-    const translated = data[0].map((seg) => seg[0]).join("");
+    let translated;
+    try {
+      translated = await translateRequest(text);
+    } catch (e) {
+      translated = await translateRequest(text); // 타임아웃/일시 오류 시 한 번 재시도
+    }
     if (translated && translated !== text) cache.set(text, translated);
     return translated;
   } catch (e) {
