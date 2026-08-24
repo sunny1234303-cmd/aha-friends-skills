@@ -1,0 +1,8 @@
+pycapcut
+pymediainfo
+imageio
+imageio-ffmpeg
+faster-whisper
+fastapi
+uvicorn
+python-multipart

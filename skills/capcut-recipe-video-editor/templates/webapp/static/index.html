@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>레시피 영상 파이프라인</title>
+<style>
+:root {
+  --font: -apple-system, 'Pretendard', sans-serif;
+  --color-bg: #FAF9F6;
+  --color-text: #1A1A1A;
+  --color-text-muted: #7F7F7F;
+  --color-border: #222222;
+  --border-width: 2.25px;
+  --color-line: #d8d4ce;
+  --color-accent: #B0512F;
+  --space-2: 8px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius: 0px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  letter-spacing: -0.02em;
+  line-height: 1.6;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 var(--space-8) var(--space-12);
+}
+header {
+  border-bottom: var(--border-width) solid var(--color-border);
+  padding: var(--space-8) 0 var(--space-6);
+  margin-bottom: var(--space-8);
+}
+h1 {
+  font-size: 32px;
+  font-weight: 500;
+  margin: 0;
+}
+.sub {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-top: var(--space-2);
+}
+
+.dropzone-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+@media (max-width: 700px) {
+  .dropzone-grid { grid-template-columns: 1fr; }
+}
+
+.dropzone {
+  position: relative;
+  border: 1.5px dashed var(--color-line);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  background: #fff;
+}
+.dropzone:hover { border-color: var(--color-text); }
+.dropzone.drag-over {
+  border-color: var(--color-accent);
+  border-style: solid;
+  background: #fdf3ef;
+}
+.dropzone.filled {
+  border-style: solid;
+  border-color: var(--color-border);
+}
+.dropzone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.dz-icon {
+  font-size: 22px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.dropzone.filled .dz-icon { color: var(--color-accent); }
+.dz-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.dz-filename {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  word-break: break-all;
+}
+.dz-hint {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 14px 0 10px;
+  margin-top: var(--space-4);
+  border-bottom: 1px solid var(--color-line);
+  align-items: center;
+}
+.field-label {
+  flex: 0 0 100px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.field-content input {
+  flex: 1;
+  min-width: 220px;
+  font-family: var(--font);
+  font-size: 15px;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+}
+.field-content input:focus { outline: none; }
+
+button#run-btn {
+  margin-top: var(--space-8);
+  width: 100%;
+  padding: 16px;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: var(--color-text);
+  color: var(--color-bg);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+button#run-btn:hover:not(:disabled) { background: var(--color-accent); }
+button#run-btn:disabled { opacity: 0.35; cursor: default; }
+
+section.panel {
+  margin-top: var(--space-12);
+  border-top: var(--border-width) solid var(--color-border);
+  padding-top: var(--space-6);
+}
+h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 var(--space-4);
+}
+.stage-item {
+  display: flex;
+  gap: var(--space-4);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 14px;
+}
+.stage-item .mark { width: 20px; color: var(--color-accent); font-weight: 600; }
+.stage-item .label { font-weight: 600; }
+.stage-item .msg { color: var(--color-text-muted); font-size: 13px; margin-left: auto; text-align: right; }
+
+.summary-row {
+  display: flex;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 14px;
+}
+.summary-row .k { flex: 0 0 160px; color: var(--color-text-muted); }
+.summary-row .v { font-weight: 600; }
+
+#error-box {
+  white-space: pre-wrap;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  padding: var(--space-4);
+  color: #a33;
+}
+.hidden { display: none; }
+
+details.advanced {
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--color-line);
+  padding-top: var(--space-4);
+}
+details.advanced summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  list-style: none;
+}
+details.advanced summary::-webkit-details-marker { display: none; }
+details.advanced summary::before { content: "+ "; color: var(--color-accent); }
+details.advanced[open] summary::before { content: "− "; }
+details.advanced[open] summary { color: var(--color-text); }
+
+.style-section { margin-top: var(--space-6); }
+.style-section h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-2);
+}
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2) var(--space-4);
+}
+@media (max-width: 650px) { .style-grid { grid-template-columns: 1fr 1fr; } }
+.style-field { display: flex; flex-direction: column; gap: 4px; }
+.style-field label { font-size: 11px; color: var(--color-text-muted); }
+.style-field select, .style-field input[type="number"] {
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 8px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--color-text);
+}
+.style-field input[type="color"] {
+  width: 100%;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: #fff;
+  cursor: pointer;
+}
+.dropzone-sm {
+  padding: var(--space-4) var(--space-4);
+}
+.dropzone-sm .dz-icon { font-size: 16px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>레시피 영상 파이프라인</h1>
+    <div class="sub">영상 + 레시피(.md) + 엔딩 이미지 → CapCut 편집 가능한 draft 자동 생성 (식재료는 레시피 .md의 "## 재료" 목록에서 자동 추출)</div>
+  </header>
+
+  <form id="run-form">
+    <div class="dropzone-grid">
+      <label class="dropzone" data-field="video">
+        <div class="dz-icon">▤</div>
+        <div class="dz-label">영상 파일</div>
+        <div class="dz-filename"></div>
+        <div class="dz-hint">클릭 또는 드래그해서 놓기</div>
+        <input type="file" name="video" accept="video/*" required>
+      </label>
+      <label class="dropzone" data-field="content_md">
+        <div class="dz-icon">▤</div>
+        <div class="dz-label">레시피 .md 파일</div>
+        <div class="dz-filename"></div>
+        <div class="dz-hint">클릭 또는 드래그해서 놓기</div>
+        <input type="file" name="content_md" accept=".md,text/markdown" required>
+      </label>
+      <label class="dropzone" data-field="end_image">
+        <div class="dz-icon">▤</div>
+        <div class="dz-label">엔딩 이미지 파일</div>
+        <div class="dz-filename"></div>
+        <div class="dz-hint">클릭 또는 드래그해서 놓기</div>
+        <input type="file" name="end_image" accept="image/*" required>
+      </label>
+    </div>
+
+    <div class="field-row">
+      <div class="field-label">draft 이름</div>
+      <div class="field-content"><input name="draft_name" placeholder="my_recipe_video" required></div>
+    </div>
+
+    <details class="advanced">
+      <summary>고급 설정 (스타일 커스터마이징)</summary>
+
+      <div class="style-section">
+        <h3>효과음</h3>
+        <label class="dropzone dropzone-sm" data-field="sfx" style="display:block; max-width: 260px;">
+          <div class="dz-icon">♪</div>
+          <div class="dz-label">효과음 파일 (선택)</div>
+          <div class="dz-filename"></div>
+          <div class="dz-hint">안 넣으면 기본 ding 사용</div>
+          <input type="file" name="sfx" accept="audio/*">
+        </label>
+      </div>
+
+      <div class="style-section">
+        <h3>편집 페이스</h3>
+        <div class="style-grid">
+          <div class="style-field">
+            <label>최종 길이(초)</label>
+            <input type="number" name="target_duration_sec" value="60" min="10" max="180" step="1">
+          </div>
+          <div class="style-field">
+            <label>무자막 컷 민감도(초)</label>
+            <input type="number" name="gap_threshold_sec" value="0.6" min="0.1" max="3" step="0.1">
+          </div>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h3>자막 스타일</h3>
+        <div class="style-grid">
+          <div class="style-field">
+            <label>폰트</label>
+            <select name="caption_font" class="font-select"></select>
+          </div>
+          <div class="style-field">
+            <label>크기</label>
+            <input type="number" name="caption_size" value="10" min="4" max="30" step="0.5">
+          </div>
+          <div class="style-field">
+            <label>색상</label>
+            <input type="color" name="caption_color" value="#FFFFFF">
+          </div>
+          <div class="style-field">
+            <label>위치</label>
+            <select name="caption_position">
+              <option value="top">상단</option>
+              <option value="center">중앙</option>
+              <option value="bottom" selected>하단</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h3>레시피 오버레이 스타일</h3>
+        <div class="style-grid">
+          <div class="style-field">
+            <label>폰트</label>
+            <select name="overlay_font" class="font-select"></select>
+          </div>
+          <div class="style-field">
+            <label>크기</label>
+            <input type="number" name="overlay_size" value="7" min="4" max="30" step="0.5">
+          </div>
+          <div class="style-field">
+            <label>색상</label>
+            <input type="color" name="overlay_color" value="#FFEB99">
+          </div>
+          <div class="style-field">
+            <label>위치</label>
+            <select name="overlay_position">
+              <option value="top" selected>상단</option>
+              <option value="center">중앙</option>
+              <option value="bottom">하단</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <button id="run-btn" type="submit">파이프라인 실행</button>
+  </form>
+
+  <section class="panel hidden" id="progress-panel">
+    <h2>진행 상황</h2>
+    <div id="stage-list"></div>
+  </section>
+
+  <section class="panel hidden" id="summary-panel">
+    <h2>완료</h2>
+    <div id="summary-list"></div>
+  </section>
+
+  <section class="panel hidden" id="error-panel">
+    <h2>오류 발생</h2>
+    <div id="error-box"></div>
+  </section>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
