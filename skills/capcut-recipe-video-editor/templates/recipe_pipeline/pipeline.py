@@ -74,7 +74,13 @@ def orchestrate(config: PipelineConfig, on_stage=None) -> PipelineResult:
     _log(2, f"{len(cues)}개 cue, {srt_path}")
 
     # Stage 5 로직 (4단계보다 먼저 계산): 식재료 사용 구간 분석 (cue 단위 태깅)
-    keywords = ingredient_detection.extract_ingredient_keywords(config.content_md)
+    # content_md가 없으면 키워드 자체가 없으므로 태깅 없이 넘어감 — 이 경우
+    # 4단계는 자동으로 "앞에서부터 순서대로 목표 길이까지" 선별로 대체된다.
+    keywords = (
+        ingredient_detection.extract_ingredient_keywords(config.content_md)
+        if config.content_md
+        else []
+    )
     ingredient_detection.tag_ingredient_cues(cues, keywords)
 
     # Stage 4: 총 60초 클립 편집 (식재료 중심, cue 단위 선별)
@@ -133,9 +139,11 @@ def orchestrate(config: PipelineConfig, on_stage=None) -> PipelineResult:
         cursor += seg.duration
     total_output_duration = cursor
 
-    # Stage 6: .md 내용 오버레이
-    overlays: List[TextOverlay] = stage_overlay.build_ingredient_overlays(
-        kept, config.content_md, config.overlay_duration_sec
+    # Stage 6: .md 내용 오버레이 (content_md 없으면 스킵 — 빈 결과로 자연스럽게 없음 처리)
+    overlays: List[TextOverlay] = (
+        stage_overlay.build_ingredient_overlays(kept, config.content_md, config.overlay_duration_sec)
+        if config.content_md
+        else []
     )
     overlay_new_starts = []
     for overlay in overlays:
@@ -152,7 +160,7 @@ def orchestrate(config: PipelineConfig, on_stage=None) -> PipelineResult:
         if overlay_new_starts[i] < prev_end:
             overlay_new_starts[i] = prev_end
         prev_end = overlay_new_starts[i] + overlays[i].duration
-    _log(6, f"{len(overlays)}개 오버레이")
+    _log(6, f"{len(overlays)}개 오버레이" + ("" if config.content_md else " (레시피 .md 없음)"))
     if overlays:
         stage_overlay.add_overlay_segments(
             script,

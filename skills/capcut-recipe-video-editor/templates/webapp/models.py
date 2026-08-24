@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 class RunRequest(BaseModel):
     video_path: str
-    content_md_path: str
     end_image_path: str
+    content_md_path: Optional[str] = None
     draft_name: str
     whisper_model_size: str = "small"
     target_duration_sec: float = 60.0

@@ -41,8 +41,8 @@ def _save_upload(upload: UploadFile, dest_dir: str) -> str:
 @app.post("/api/runs")
 def create_run(
     video: UploadFile = File(...),
-    content_md: UploadFile = File(...),
     end_image: UploadFile = File(...),
+    content_md: UploadFile = File(None),
     sfx: UploadFile = File(None),
     draft_name: str = Form(...),
     whisper_model_size: str = Form("small"),
@@ -59,8 +59,12 @@ def create_run(
 ):
     upload_dir = os.path.join(UPLOAD_DIR, uuid.uuid4().hex[:8])
     video_path = _save_upload(video, upload_dir)
-    content_md_path = _save_upload(content_md, upload_dir)
     end_image_path = _save_upload(end_image, upload_dir)
+    content_md_path = (
+        _save_upload(content_md, upload_dir)
+        if content_md is not None and content_md.filename
+        else None
+    )
     sfx_path = _save_upload(sfx, upload_dir) if sfx is not None and sfx.filename else None
 
     request = RunRequest(

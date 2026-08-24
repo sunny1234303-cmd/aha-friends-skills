@@ -7,7 +7,11 @@ from .pipeline import orchestrate
 def main():
     parser = argparse.ArgumentParser(description="레시피 숏폼 영상 자동 편집 파이프라인")
     parser.add_argument("--video", required=True)
-    parser.add_argument("--content-md", required=True)
+    parser.add_argument(
+        "--content-md",
+        default=None,
+        help="레시피/재료 정보 .md (선택). 없으면 식재료 감지·오버레이·효과음 없이 순서대로 하이라이트 선별",
+    )
     parser.add_argument("--end-image", required=True)
     parser.add_argument("--draft-name", required=True)
     parser.add_argument("--draft-folder", default=DEFAULT_DRAFT_FOLDER)
@@ -52,7 +56,7 @@ def main():
     print(f"draft: {result.draft_dir}")
     print(f"최종 길이: {result.final_duration_sec:.1f}초")
     print(f"선택된 구간: {result.kept_segment_count}개")
-    print(f"식재료: {', '.join(result.ingredient_keywords_found)}")
+    print(f"식재료: {', '.join(result.ingredient_keywords_found) or '없음'}")
     print(f"SRT: {result.srt_path}")
     print(f"로그: {result.log_path}")
 

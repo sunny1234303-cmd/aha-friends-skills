@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass, field
+from typing import Optional
 
 DEFAULT_DRAFT_FOLDER = os.path.expanduser(
     "~/Movies/CapCut/User Data/Projects/com.lveditor.draft"
@@ -12,9 +13,9 @@ DEFAULT_SFX_PATH = os.path.join(
 @dataclass
 class PipelineConfig:
     source_video: str
-    content_md: str
     end_image: str
     output_draft_name: str
+    content_md: Optional[str] = None  # 없으면 식재료 감지/오버레이 없이 순서대로 하이라이트 선별
     draft_folder: str = DEFAULT_DRAFT_FOLDER
     whisper_model_size: str = "small"
     target_duration_sec: float = 60.0

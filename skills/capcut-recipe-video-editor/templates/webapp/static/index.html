@@ -256,7 +256,7 @@ details.advanced[open] summary { color: var(--color-text); }
 <div class="container">
   <header>
     <h1>레시피 영상 파이프라인</h1>
-    <div class="sub">영상 + 레시피(.md) + 엔딩 이미지 → CapCut 편집 가능한 draft 자동 생성 (식재료는 레시피 .md의 "## 재료" 목록에서 자동 추출)</div>
+    <div class="sub">영상 + 엔딩 이미지만으로도 실행 가능 → CapCut 편집 가능한 draft 자동 생성 (레시피 .md를 함께 넣으면 "## 재료" 목록에서 식재료를 자동 추출해 그 구간 중심으로 하이라이트를 고름)</div>
   </header>
 
   <form id="run-form">
@@ -270,10 +270,10 @@ details.advanced[open] summary { color: var(--color-text); }
       </label>
       <label class="dropzone" data-field="content_md">
         <div class="dz-icon">▤</div>
-        <div class="dz-label">레시피 .md 파일</div>
+        <div class="dz-label">레시피 .md 파일 (선택)</div>
         <div class="dz-filename"></div>
-        <div class="dz-hint">클릭 또는 드래그해서 놓기</div>
-        <input type="file" name="content_md" accept=".md,text/markdown" required>
+        <div class="dz-hint">없으면 순서대로 하이라이트 선별</div>
+        <input type="file" name="content_md" accept=".md,text/markdown">
       </label>
       <label class="dropzone" data-field="end_image">
         <div class="dz-icon">▤</div>
