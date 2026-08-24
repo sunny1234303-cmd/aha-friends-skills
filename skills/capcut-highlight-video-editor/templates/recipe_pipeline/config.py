@@ -34,7 +34,7 @@ class PipelineConfig:
     caption_color: str = "#FFFFFF"
     caption_position: str = "bottom"  # top | center | bottom
 
-    # 오버레이(레시피 정보) 스타일
+    # 오버레이(텍스트 노트 키워드 정보) 스타일
     overlay_font: str = "Arimo_Regular"
     overlay_size: float = 7.0
     overlay_color: str = "#FFEB99"

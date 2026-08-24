@@ -5,7 +5,7 @@ from .pipeline import orchestrate
 
 
 def main():
-    parser = argparse.ArgumentParser(description="레시피 숏폼 영상 자동 편집 파이프라인")
+    parser = argparse.ArgumentParser(description="숏폼 하이라이트 영상 자동 편집 파이프라인")
     parser.add_argument("--video", required=True)
     parser.add_argument(
         "--content-md",

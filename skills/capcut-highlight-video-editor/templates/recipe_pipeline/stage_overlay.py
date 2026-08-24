@@ -1,4 +1,4 @@
-"""Stage 6: 미리 제시해준 내용(.md) 활용하여 내용 추가 (레시피/재료 정보 텍스트 오버레이).
+"""Stage 6: 미리 제시해준 내용(.md) 활용하여 내용 추가 (키워드 관련 텍스트 오버레이).
 
 Parses the "## 재료" bullet list out of the content .md and, for each kept
 highlight segment that mentions an ingredient, attaches the matching bullet
