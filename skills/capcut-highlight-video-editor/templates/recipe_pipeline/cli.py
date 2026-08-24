@@ -10,7 +10,7 @@ def main():
     parser.add_argument(
         "--content-md",
         default=None,
-        help="레시피/재료 정보 .md (선택). 없으면 식재료 감지·오버레이·효과음 없이 순서대로 하이라이트 선별",
+        help="텍스트 노트 .md (선택, 재료/단계/제품명 등 리스트가 있는 어떤 내용이든). 없으면 키워드 감지·오버레이·효과음 없이 순서대로 하이라이트 선별",
     )
     parser.add_argument("--end-image", required=True)
     parser.add_argument("--draft-name", required=True)
@@ -56,7 +56,7 @@ def main():
     print(f"draft: {result.draft_dir}")
     print(f"최종 길이: {result.final_duration_sec:.1f}초")
     print(f"선택된 구간: {result.kept_segment_count}개")
-    print(f"식재료: {', '.join(result.ingredient_keywords_found) or '없음'}")
+    print(f"키워드: {', '.join(result.ingredient_keywords_found) or '없음'}")
     print(f"SRT: {result.srt_path}")
     print(f"로그: {result.log_path}")
 

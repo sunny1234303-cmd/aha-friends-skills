@@ -27,7 +27,7 @@ STAGE_LABELS = {
     1: "영상 삽입",
     2: "자막 스크립트 생성",
     3: "무자막 구간 컷 편집",
-    "4_5": "총 60초 클립 편집 + 식재료 사용 구간 분석 (4단계는 5단계 결과에 의존해 함께 계산됨)",
+    "4_5": "하이라이트 편집 + 키워드 등장 구간 분석 (4단계는 5단계 결과에 의존해 함께 계산됨)",
     6: "미리 제시해준 내용(.md) 활용하여 내용 추가",
     7: "자막 글꼴/크기/위치/확대",
     8: "자동 효과음 추가",
@@ -90,11 +90,11 @@ def orchestrate(config: PipelineConfig, on_stage=None) -> PipelineResult:
         "4_5",
         f"{len(selected_cues)}/{len(cues)}개 cue 선택, "
         f"총 {sum(c.end - c.start for c in selected_cues):.1f}초, "
-        f"식재료: {', '.join(found_keywords) if found_keywords else '없음'}",
+        f"키워드: {', '.join(found_keywords) if found_keywords else '없음'}",
     )
 
     if not selected_cues:
-        raise ValueError("선택된 구간이 없습니다 — 자막/식재료 키워드를 확인하세요.")
+        raise ValueError("선택된 구간이 없습니다 — 자막/키워드를 확인하세요.")
 
     # Stage 3: 무자막 구간 컷 편집 — 선택된 cue들 중 원본에서 가까운 것끼리만
     # 하나의 연속 클립으로 묶고, 멀리 떨어진 것(또는 사이 cue가 스킵된 경우)은
@@ -160,7 +160,7 @@ def orchestrate(config: PipelineConfig, on_stage=None) -> PipelineResult:
         if overlay_new_starts[i] < prev_end:
             overlay_new_starts[i] = prev_end
         prev_end = overlay_new_starts[i] + overlays[i].duration
-    _log(6, f"{len(overlays)}개 오버레이" + ("" if config.content_md else " (레시피 .md 없음)"))
+    _log(6, f"{len(overlays)}개 오버레이" + ("" if config.content_md else " (텍스트 노트 없음)"))
     if overlays:
         stage_overlay.add_overlay_segments(
             script,

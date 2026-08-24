@@ -2,7 +2,7 @@ const STAGE_ORDER = [
   ["1", "영상 삽입"],
   ["2", "자막 스크립트 생성"],
   ["3", "무자막 구간 컷 편집"],
-  ["4_5", "총 60초 클립 편집 + 식재료 사용 구간 분석"],
+  ["4_5", "하이라이트 편집 + 키워드 등장 구간 분석"],
   ["6", "미리 제시해준 내용(.md) 활용하여 내용 추가"],
   ["7", "자막 글꼴/크기/위치/확대"],
   ["8", "자동 효과음 추가"],
@@ -88,7 +88,7 @@ function renderSummary(summary) {
     ["draft 위치", summary.draft_dir],
     ["최종 길이", `${summary.final_duration_sec.toFixed(1)}초`],
     ["선택된 구간", `${summary.kept_segment_count}개`],
-    ["감지된 식재료", summary.ingredient_keywords_found.join(", ") || "없음"],
+    ["감지된 키워드", summary.ingredient_keywords_found.join(", ") || "없음"],
     ["SRT", summary.srt_path],
     ["로그", summary.log_path],
   ];

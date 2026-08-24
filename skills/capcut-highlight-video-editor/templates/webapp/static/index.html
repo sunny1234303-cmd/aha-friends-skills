@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
-<title>레시피 영상 파이프라인</title>
+<title>숏폼 하이라이트 영상 편집기</title>
 <style>
 :root {
   --font: -apple-system, 'Pretendard', sans-serif;
@@ -255,8 +255,8 @@ details.advanced[open] summary { color: var(--color-text); }
 <body>
 <div class="container">
   <header>
-    <h1>레시피 영상 파이프라인</h1>
-    <div class="sub">영상 + 엔딩 이미지만으로도 실행 가능 → CapCut 편집 가능한 draft 자동 생성 (레시피 .md를 함께 넣으면 "## 재료" 목록에서 식재료를 자동 추출해 그 구간 중심으로 하이라이트를 고름)</div>
+    <h1>숏폼 하이라이트 영상 편집기</h1>
+    <div class="sub">영상 + 엔딩 이미지만으로도 실행 가능 → CapCut 편집 가능한 draft 자동 생성 (텍스트 노트를 함께 넣으면 그 안의 키워드 등장 구간을 자동 추출해 그 구간 중심으로 하이라이트를 고름)</div>
   </header>
 
   <form id="run-form">
@@ -270,7 +270,7 @@ details.advanced[open] summary { color: var(--color-text); }
       </label>
       <label class="dropzone" data-field="content_md">
         <div class="dz-icon">▤</div>
-        <div class="dz-label">레시피 .md 파일 (선택)</div>
+        <div class="dz-label">텍스트 노트 .md 파일 (선택)</div>
         <div class="dz-filename"></div>
         <div class="dz-hint">없으면 순서대로 하이라이트 선별</div>
         <input type="file" name="content_md" accept=".md,text/markdown">
@@ -344,7 +344,7 @@ details.advanced[open] summary { color: var(--color-text); }
       </div>
 
       <div class="style-section">
-        <h3>레시피 오버레이 스타일</h3>
+        <h3>텍스트 오버레이 스타일</h3>
         <div class="style-grid">
           <div class="style-field">
             <label>폰트</label>
