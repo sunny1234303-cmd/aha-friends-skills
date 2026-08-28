@@ -57,24 +57,37 @@ def add_overlay_segments(
     font_size: float = 7.0,
     color: Tuple[float, float, float] = (1.0, 0.92, 0.6),
     vertical_position: float = 0.75,
+    *,
+    bold: bool = True,
+    all_caps: bool = False,
+    border=None,
+    background=None,
+    anim_in=None,
+    anim_out=None,
+    anim_duration_sec: float = 0.5,
 ) -> None:
     """overlays_with_new_start: new_start_sec for each entry in `overlays`,
-    already remapped onto the compressed output timeline by pipeline.py."""
-    if font is None:
-        font = cc.FontType.Arimo_Regular
+    already remapped onto the compressed output timeline by pipeline.py.
+    font=None 이면 CapCut 기본 폰트로 렌더 (한글 등 재현 불가 서체)."""
     for new_start, overlay in zip(overlays_with_new_start, overlays):
         style = cc.TextStyle(
             size=font_size,
-            bold=True,
+            bold=bold,
             color=color,
             align=1,
             auto_wrapping=True,
         )
         text_segment = cc.TextSegment(
-            overlay.text,
+            overlay.text.upper() if all_caps else overlay.text,
             cc.Timerange(int(new_start * SEC), int(overlay.duration * SEC)),
             font=font,
             style=style,
             clip_settings=cc.ClipSettings(transform_y=vertical_position),
+            border=border,
+            background=background,
         )
+        if anim_in is not None:
+            text_segment.add_animation(anim_in, int(anim_duration_sec * 1_000_000))
+        if anim_out is not None:
+            text_segment.add_animation(anim_out, int(anim_duration_sec * 1_000_000))
         script.add_segment(text_segment, track_name)

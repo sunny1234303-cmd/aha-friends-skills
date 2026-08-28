@@ -48,7 +48,11 @@ def _regroup_words_into_cues(
 
 
 def transcribe_to_srt(
-    video_path: str, srt_out_path: str, model_size: str = "small"
+    video_path: str,
+    srt_out_path: str,
+    model_size: str = "small",
+    pause_gap_sec: float = 0.5,
+    max_cue_sec: float = 6.0,
 ) -> List[TranscriptSegment]:
     """Runs local Whisper over the video's audio track and writes an SRT file.
 
@@ -69,7 +73,7 @@ def transcribe_to_srt(
         if seg.words:
             all_words.extend(seg.words)
 
-    segments = _regroup_words_into_cues(all_words)
+    segments = _regroup_words_into_cues(all_words, pause_gap_sec, max_cue_sec)
 
     lines = []
     for i, seg in enumerate(segments, start=1):

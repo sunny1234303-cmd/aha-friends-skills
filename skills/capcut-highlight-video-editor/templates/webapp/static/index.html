@@ -293,14 +293,51 @@ details.advanced[open] summary { color: var(--color-text); }
       <summary>고급 설정 (스타일 커스터마이징)</summary>
 
       <div class="style-section">
+        <h3>스타일 프로필 (특정 채널 룩 따라가기)</h3>
+        <div class="style-grid">
+          <div class="style-field" style="grid-column: span 2;">
+            <label>저장된 프로필</label>
+            <select name="style_profile_name" id="style-profile-select">
+              <option value="">— 사용 안 함 —</option>
+            </select>
+          </div>
+          <div class="style-field" style="grid-column: span 2;">
+            <label>프로필 .json 업로드</label>
+            <input type="file" name="style_profile" accept=".json" id="style-profile-file"
+                   style="font-size:12px; padding:6px 0;">
+          </div>
+        </div>
+        <div class="dz-hint" style="margin-top:6px">
+          프로필을 선택하면 아래 값이 그 채널 기준으로 자동 채워집니다. 이후 개별 값을 바꾸면 그 항목만 프로필 위에 덮어씁니다.
+          색보정·전환 등 일부 항목(advisory)은 자동 적용되지 않습니다.
+        </div>
+      </div>
+
+      <div class="style-section">
         <h3>효과음</h3>
-        <label class="dropzone dropzone-sm" data-field="sfx" style="display:block; max-width: 260px;">
+        <label class="dropzone dropzone-sm" data-field="sfx" style="display:block; max-width: 320px;">
           <div class="dz-icon">♪</div>
-          <div class="dz-label">효과음 파일 (선택)</div>
+          <div class="dz-label">효과음 파일 (선택, 여러 개 가능)</div>
           <div class="dz-filename"></div>
-          <div class="dz-hint">안 넣으면 기본 ding 사용</div>
-          <input type="file" name="sfx" accept="audio/*">
+          <div class="dz-hint">안 넣으면 기본 ding · 여러 개 넣으면 트리거마다 순환</div>
+          <input type="file" name="sfx" accept="audio/*" multiple>
         </label>
+        <div class="style-grid" style="margin-top:8px">
+          <div class="style-field" style="grid-column: span 2;">
+            <label>효과음 넣을 위치 (파일 1개일 때)</label>
+            <select name="sfx_trigger">
+              <option value="keywords" selected>키워드 언급 시 (.md 필요)</option>
+              <option value="cuts">컷(클립 경계)마다</option>
+              <option value="caption_in">자막 등장마다</option>
+              <option value="both">키워드+컷</option>
+            </select>
+          </div>
+          <div class="style-field" style="grid-column: 1 / -1;">
+            <label>효과음별 배치 (파일 여러 개, JSON — 위 선택보다 우선)</label>
+            <textarea name="sfx_map" rows="3" placeholder='[{"file":"whoosh.wav","trigger":"cuts"},{"file":"ding.wav","trigger":"keywords"}]'
+              style="font-family:ui-monospace,monospace;font-size:12px;padding:8px;border:1px solid var(--color-line);"></textarea>
+          </div>
+        </div>
       </div>
 
       <div class="style-section">
@@ -313,6 +350,14 @@ details.advanced[open] summary { color: var(--color-text); }
           <div class="style-field">
             <label>무자막 컷 민감도(초)</label>
             <input type="number" name="gap_threshold_sec" value="0.6" min="0.1" max="3" step="0.1">
+          </div>
+          <div class="style-field">
+            <label>컷 호흡 pause_gap(초)</label>
+            <input type="number" name="pause_gap_sec" placeholder="0.5" min="0.2" max="1.5" step="0.05">
+          </div>
+          <div class="style-field">
+            <label>최대 큐 길이 max_cue(초)</label>
+            <input type="number" name="max_cue_sec" placeholder="6.0" min="2" max="10" step="0.5">
           </div>
         </div>
       </div>
@@ -340,6 +385,59 @@ details.advanced[open] summary { color: var(--color-text); }
               <option value="bottom" selected>하단</option>
             </select>
           </div>
+          <div class="style-field">
+            <label>영문 대문자화</label>
+            <select name="caption_all_caps">
+              <option value="false" selected>아니오</option>
+              <option value="true">예</option>
+            </select>
+          </div>
+          <div class="style-field">
+            <label>외곽선 색 (비우면 없음)</label>
+            <input type="text" name="caption_outline_color" placeholder="#000000">
+          </div>
+          <div class="style-field">
+            <label>외곽선 두께 (0~100)</label>
+            <input type="number" name="caption_outline_width" value="0" min="0" max="100" step="1">
+          </div>
+          <div class="style-field">
+            <label>그림자 (실험적)</label>
+            <select name="caption_shadow">
+              <option value="false" selected>끔</option>
+              <option value="true">켬</option>
+            </select>
+          </div>
+          <div class="style-field">
+            <label>배경 박스</label>
+            <select name="caption_bg">
+              <option value="false" selected>끔</option>
+              <option value="true">켬</option>
+            </select>
+          </div>
+          <div class="style-field">
+            <label>배경 박스 색</label>
+            <input type="color" name="caption_bg_color" value="#000000">
+          </div>
+          <div class="style-field">
+            <label>등장 애니메이션</label>
+            <select name="caption_anim_in" class="anim-in-select"></select>
+          </div>
+          <div class="style-field">
+            <label>퇴장 애니메이션</label>
+            <select name="caption_anim_out" class="anim-out-select"></select>
+          </div>
+          <div class="style-field">
+            <label>줌 강조 대상</label>
+            <select name="caption_zoom_trigger">
+              <option value="keyword" selected>키워드 자막만</option>
+              <option value="all">모든 자막</option>
+              <option value="none">끔</option>
+            </select>
+          </div>
+          <div class="style-field">
+            <label>줌 배율</label>
+            <input type="number" name="caption_zoom_scale" value="1.15" min="1" max="1.5" step="0.01">
+          </div>
         </div>
       </div>
 
@@ -365,6 +463,46 @@ details.advanced[open] summary { color: var(--color-text); }
               <option value="center">중앙</option>
               <option value="bottom">하단</option>
             </select>
+          </div>
+          <div class="style-field">
+            <label>영문 대문자화</label>
+            <select name="overlay_all_caps">
+              <option value="false" selected>아니오</option>
+              <option value="true">예</option>
+            </select>
+          </div>
+          <div class="style-field">
+            <label>외곽선 색 (비우면 없음)</label>
+            <input type="text" name="overlay_outline_color" placeholder="#000000">
+          </div>
+          <div class="style-field">
+            <label>외곽선 두께 (0~100)</label>
+            <input type="number" name="overlay_outline_width" value="0" min="0" max="100" step="1">
+          </div>
+          <div class="style-field">
+            <label>배경 박스</label>
+            <select name="overlay_bg">
+              <option value="false" selected>끔</option>
+              <option value="true">켬</option>
+            </select>
+          </div>
+          <div class="style-field">
+            <label>등장 애니메이션</label>
+            <select name="overlay_anim_in" class="anim-in-select"></select>
+          </div>
+          <div class="style-field">
+            <label>퇴장 애니메이션</label>
+            <select name="overlay_anim_out" class="anim-out-select"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h3>효과음 볼륨</h3>
+        <div class="style-grid">
+          <div class="style-field">
+            <label>볼륨 (0~1)</label>
+            <input type="number" name="sfx_volume" value="0.7" min="0" max="1" step="0.05">
           </div>
         </div>
       </div>

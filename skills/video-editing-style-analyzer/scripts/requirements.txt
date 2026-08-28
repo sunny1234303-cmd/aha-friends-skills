@@ -1,0 +1,6 @@
+yt-dlp
+imageio-ffmpeg
+pymediainfo
+numpy
+scipy
+soundfile

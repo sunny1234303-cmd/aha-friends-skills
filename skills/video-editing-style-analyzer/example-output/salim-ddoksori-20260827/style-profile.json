@@ -1,0 +1,204 @@
+{
+  "schema_version": "1.0",
+  "provenance": {
+    "source_type": "channel",
+    "source_url": "https://www.youtube.com/@살림똑소리/shorts",
+    "channel_name": "살림똑소리",
+    "format": "shorts",
+    "videos_analyzed": [
+      {
+        "id": "RD0-6PirPjw",
+        "url": "https://www.youtube.com/watch?v=RD0-6PirPjw",
+        "title": "다이소에서 1000원으로 차키배터리 교체하는 방법",
+        "views": 6068,
+        "upload_date": "20260125",
+        "duration_sec": 23,
+        "width": 1080,
+        "height": 1920,
+        "fps": 30.0,
+        "is_short": true
+      },
+      {
+        "id": "I5PxDCbotug",
+        "url": "https://www.youtube.com/watch?v=I5PxDCbotug",
+        "title": "화잘먹 필수템! 베이스프렙 3가지 추천",
+        "views": 5538,
+        "upload_date": "20260508",
+        "duration_sec": 42,
+        "width": 1080,
+        "height": 1920,
+        "fps": 30.0,
+        "is_short": true
+      },
+      {
+        "id": "u7CFJ_x6ZKI",
+        "url": "https://www.youtube.com/watch?v=u7CFJ_x6ZKI",
+        "title": "요즘 핫한 맥북 꾸미기 악세사리템 쿠팡추천템",
+        "views": 5197,
+        "upload_date": "20260204",
+        "duration_sec": 21,
+        "width": 1080,
+        "height": 1920,
+        "fps": 30.0,
+        "is_short": true
+      },
+      {
+        "id": "lQCkfS-XrwQ",
+        "url": "https://www.youtube.com/watch?v=lQCkfS-XrwQ",
+        "title": "삶의질 수직 상승하는 냉동밥 보관 쿠팡추천템",
+        "views": 1851,
+        "upload_date": "20260624",
+        "duration_sec": 26,
+        "width": 1080,
+        "height": 1920,
+        "fps": 30,
+        "is_short": true
+      },
+      {
+        "id": "YPmJkn7xgKg",
+        "url": "https://www.youtube.com/watch?v=YPmJkn7xgKg",
+        "title": "소리없이 필기감 좋은 저소음 애플펜슬 펜촉 추천템",
+        "views": 2019,
+        "upload_date": "20260610",
+        "duration_sec": 33,
+        "width": 1080,
+        "height": 1920,
+        "fps": 30,
+        "is_short": true
+      }
+    ],
+    "analyzed_at": "2026-08-28T13:26:32+00:00",
+    "analyzer_version": "1.0.0",
+    "notes": "조회수 상위 2 + 최신 5 합집합, 중복/이상치 제거",
+    "limitations": [
+      "컷 편집이 자막(cue) 경계에 묶임 — 원본 채널처럼 '자막과 무관하게 내용/샷 기준으로 컷'은 불가. gap_threshold_sec 를 키워 덜 잘게 쪼갤 수는 있음.",
+      "색보정(advisory.color_grade)은 적용 단계가 없음 — CapCut 조정 레이어/LUT 수동.",
+      "전환 효과(스피드라인/whip 등), 이모지 스티커, 고정 워터마크/CTA 오버레이는 파이프라인 밖.",
+      "자막/오버레이 서체가 pycapcut FontType(라틴 348종)에 없음 → CapCut 기본 폰트로 렌더. 정확한 한글 서체는 CapCut 에서 직접 지정."
+    ]
+  },
+  "applied": {
+    "canvas": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "target_duration_sec": 26,
+    "pacing": {
+      "pause_gap_sec": 0.3,
+      "max_cue_sec": 3.0,
+      "gap_threshold_sec": 2.88
+    },
+    "caption": {
+      "font_family": "두꺼운 라운드 고딕 (한글, 배민 주아체/여기어때 잘난체 계열)",
+      "font": "__capcut_default__",
+      "font_confidence": 0.35,
+      "size": 10.6,
+      "color": "#111111",
+      "position": "bottom",
+      "align": 1,
+      "bold": true,
+      "all_caps": false,
+      "outline": {
+        "enabled": true,
+        "color": "#FFFFFF",
+        "width": 28.0,
+        "alpha": 1.0
+      },
+      "background": {
+        "enabled": false
+      },
+      "animation": {
+        "in": "pop",
+        "out": "none",
+        "duration_sec": 0.15
+      },
+      "shadow": {
+        "enabled": false
+      },
+      "transform_y": -0.7,
+      "font_note": "파이프라인이 재현 못하는 서체 — CapCut에서 직접 지정 필요. 관찰: 두꺼운 라운드 고딕 (한글, 배민 주아체/여기어때 잘난체 계열)"
+    },
+    "caption_emphasis": {
+      "trigger": "none",
+      "scale": 1.0,
+      "duration_sec": 0.25
+    },
+    "overlay": {
+      "font_family": "핑크 손글씨체 (한글, Cafe24 써라운드/나눔손글씨 계열)",
+      "font": "__capcut_default__",
+      "font_confidence": 0.3,
+      "size": 8.4,
+      "color": "#E85A9B",
+      "position": "top",
+      "bold": true,
+      "all_caps": false,
+      "outline": {
+        "enabled": true,
+        "color": "#FFFFFF",
+        "width": 24.5,
+        "alpha": 1.0
+      },
+      "background": {
+        "enabled": false
+      },
+      "animation": {
+        "in": "slide-up",
+        "out": "none",
+        "duration_sec": 0.2
+      },
+      "font_note": "파이프라인이 재현 못하는 서체 — CapCut에서 직접 지정 필요. 관찰: 핑크 손글씨체 (한글, Cafe24 써라운드/나눔손글씨 계열)"
+    },
+    "sfx": {
+      "volume": 0.69,
+      "duration_sec": 0.15,
+      "trigger": "cuts",
+      "variety": "varied",
+      "per_minute": 63.848
+    }
+  },
+  "advisory": {
+    "shot_pacing": {
+      "median_shot_sec": 1.919,
+      "mean_shot_sec": 2.514,
+      "p10_shot_sec": 0.947,
+      "p90_shot_sec": 4.585,
+      "cuts_per_minute": 22.402,
+      "pct_shots_under_1_5s": 0.382,
+      "pct_shots_under_0_5s": 0.022
+    },
+    "color_grade": {
+      "contrast": "punchy",
+      "saturation": "natural",
+      "temperature": "warm",
+      "black_level": "natural",
+      "look": "밝은 하이키 — 흰 배경/자연광, 채도 약간 올림, 노출 높음",
+      "vignette": false,
+      "confidence": 0.5
+    },
+    "hook_structure": {
+      "first_3s": "제품을 손으로 들고 빠르게 움직이는 클로즈업 + 화면 꽉 채우는 3줄 컬러 타이틀 카드(핑크/옐로우/민트 단어별 색 + 흰 외곽선, 'BEST N' 이탤릭) + 상단 회색 라벨 훅문구 + 방사형 스피드라인 배경 + 이모지 스티커",
+      "pattern": "제품 클로즈업 + 대형 컬러 타이틀 카드",
+      "confidence": 0.8
+    },
+    "shot_scale_mix": {
+      "closeup": 0.7,
+      "medium": 0.3,
+      "wide": 0.0,
+      "confidence": 0.6
+    },
+    "broll_ratio": {
+      "talking_head": 0.0,
+      "broll": 1.0,
+      "confidence": 0.85,
+      "note": "얼굴 없음 — 손+제품 탑다운/오버숄더 뷰만"
+    },
+    "text_density": "high",
+    "emoji_usage": "frequent",
+    "censor_bleeps": false,
+    "bgm": {
+      "present": true,
+      "level_db_below_vo": -13.86
+    }
+  }
+}

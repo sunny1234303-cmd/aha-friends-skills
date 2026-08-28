@@ -1,0 +1,70 @@
+{
+  "source_type": "channel",
+  "source_url": "https://www.youtube.com/@살림똑소리/shorts",
+  "channel_name": "살림똑소리",
+  "channel_slug": "살림똑소리",
+  "format": "shorts",
+  "picked": [
+    {
+      "id": "RD0-6PirPjw",
+      "url": "https://www.youtube.com/watch?v=RD0-6PirPjw",
+      "title": "다이소에서 1000원으로 차키배터리 교체하는 방법",
+      "views": 6068,
+      "upload_date": "20260125",
+      "duration_sec": 23,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30.0,
+      "is_short": true
+    },
+    {
+      "id": "I5PxDCbotug",
+      "url": "https://www.youtube.com/watch?v=I5PxDCbotug",
+      "title": "화잘먹 필수템! 베이스프렙 3가지 추천",
+      "views": 5538,
+      "upload_date": "20260508",
+      "duration_sec": 42,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30.0,
+      "is_short": true
+    },
+    {
+      "id": "u7CFJ_x6ZKI",
+      "url": "https://www.youtube.com/watch?v=u7CFJ_x6ZKI",
+      "title": "요즘 핫한 맥북 꾸미기 악세사리템 쿠팡추천템",
+      "views": 5197,
+      "upload_date": "20260204",
+      "duration_sec": 21,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30.0,
+      "is_short": true
+    },
+    {
+      "id": "lQCkfS-XrwQ",
+      "url": "https://www.youtube.com/watch?v=lQCkfS-XrwQ",
+      "title": "삶의질 수직 상승하는 냉동밥 보관 쿠팡추천템",
+      "views": 1851,
+      "upload_date": "20260624",
+      "duration_sec": 26,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "is_short": true
+    },
+    {
+      "id": "YPmJkn7xgKg",
+      "url": "https://www.youtube.com/watch?v=YPmJkn7xgKg",
+      "title": "소리없이 필기감 좋은 저소음 애플펜슬 펜촉 추천템",
+      "views": 2019,
+      "upload_date": "20260610",
+      "duration_sec": 33,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "is_short": true
+    }
+  ],
+  "selection_reason": "조회수 상위 2 + 최신 5 합집합, 중복/이상치 제거"
+}

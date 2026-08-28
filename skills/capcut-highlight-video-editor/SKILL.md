@@ -101,6 +101,25 @@ uvicorn webapp.main:app --reload
 9. 종료 2~3초 전 엔딩 이미지 삽입
 10. 클립 삭제 가능한 편집 가능 상태로 저장 (렌더링 아님)
 
+## 스타일 프로필로 특정 채널 룩 따라가기
+
+`video-editing-style-analyzer` 스킬이 유튜브 채널/영상 URL을 분석해 만든 `style-profile.json`을 이 파이프라인에 넣으면, 자동 편집 draft의 자막·컷 호흡·효과음이 그 채널 스타일을 따라간다.
+
+```bash
+python3 -m recipe_pipeline.cli \
+  --video 영상.mp4 --end-image 엔딩.jpg --draft-name test-1 \
+  --style-profile style-profiles/채널이름.json
+```
+
+- 프로필 위치: 프로젝트 루트의 `style-profiles/` 폴더 (analyzer가 여기에 씀, CLI·웹앱이 여기서 읽음, `RECIPE_STYLE_PROFILES_DIR` env로 변경 가능).
+- 프로필을 준 뒤에도 개별 CLI 플래그(`--caption-size` 등)를 명시하면 그 항목만 프로필 위에 덮어쓴다.
+- 웹 대시보드에서는 고급 설정 맨 위 "스타일 프로필" 블록에서 저장된 프로필을 고르거나 업로드하면 나머지 스타일 입력이 자동으로 채워진다.
+- **TIER A (자동 적용됨)**: 캔버스/타깃 길이, 컷 호흡(`pause_gap_sec`/`max_cue_sec`/`gap_threshold_sec`), 자막 폰트·크기·색·위치·정렬·굵기·대문자화·외곽선·그림자·배경박스·인/아웃 애니메이션·키워드 줌, 오버레이 동일 항목, 효과음 볼륨.
+- **TIER B (advisory — 자동 적용 안 됨)**: 색보정(대비/채도/색온도), 전환 종류, 후킹 구조, BGM. 색보정은 CapCut에서 조정 레이어/LUT로 직접 얹어야 한다. 프로필의 `advisory` 블록에 측정값이 들어있으니 참고용으로 쓴다.
+- **효과음 배치**: `sfx_map`으로 효과음 파일별 위치를 정한다 — `[{"file":"whoosh.wav","trigger":"cuts"},{"file":"ding.wav","trigger":"keywords"}]`. 순환이 아니라 "이 소리는 여기". 음원은 사용자가 준비하고, 어디에 넣을지는 `video-editing-style-analyzer`가 사용자에게 물어 프로필 `sfx.map`에 넣는다. `sfx_map` 없으면 `sfx_trigger` 한 곳에 `sfx_dir` 풀 순환(단순).
+- **한글 등 커스텀 폰트**: `caption_font`는 pycapcut FontType(라틴 348종)만 되므로 한글 서체는 못 지정한다. 프로필에 `applied.caption.font_capcut = {resource_id, name}`(CapCut draft에서 뽑은 폰트 블록)이 있으면 `style_utils.RawFont`로 그 폰트를 주입한다. 없으면 `caption_font: "__capcut_default__"`로 CapCut 기본 폰트 렌더. 추출은 `video-editing-style-analyzer/scripts/capture_font.py`.
+- `--style-profile` 없이 실행하면 동작은 이전과 완전히 동일하다(모든 신규 필드 기본값 = 기존 하드코딩값).
+
 ## 실전에서 발견한 함정 (전부 확인·해결됨, 순서대로 마주치기 쉬움)
 
 ### 1. macOS CapCut은 `draft_content.json`이 아니라 `draft_info.json`을 읽는다
@@ -125,7 +144,13 @@ Whisper 모델의 내부 처리 윈도우가 30초라서, `vad_filter=True`를 �
 pycapcut 문서만 보면 효과음에 `AudioSceneEffectType`을 쓸 것 같지만, 실제로 확인해보면 이건 ~200종의 보이스체인저 필터(Bibble, Witch, Elfy, Good Guy 등)다. 짧게 적용해도 "음성이 잠깐 일그러지는" 효과가 나지, "딩" 하는 단발 효과음이 아니다. 진짜 효과음이 필요하면 **로컬 오디오 파일**을 `AudioSegment`로 별도 트랙에 얹는 방식을 쓴다 (`stage_sfx.py`). `recipe_pipeline/assets/default_ding.wav`가 기본 제공되며, `config.sfx_path`로 다른 파일 지정 가능.
 
 ### 8. 폰트는 pycapcut의 `FontType`(약 350개)에서 골라야 하고, 전부 실제 CapCut 폰트 ID로 매핑된다
-`cc.FontType[이름]`으로 유효성 검증. `style_utils.py`의 `CAPTION_FONTS`에 10개를 큐레이션해뒀지만, 전체 목록이 필요하면 `list(cc.FontType)`로 조회. **주의**: Arimo(기본)는 실제 CapCut 렌더링까지 확인됐지만, 나머지 폰트들은 "유효한 등록 폰트다"까지만 확인됐지 실제 렌더링 결과를 전부 눈으로 검증한 건 아니다 — 사용자가 특정 폰트를 고르면 실제로 CapCut에서 열어서 확인해달라고 요청할 것.
+`cc.FontType[이름]`으로 유효성 검증. `style_utils.py`의 `CAPTION_FONTS`에 10개를 큐레이션해뒀지만, 전체 목록이 필요하면 `list(cc.FontType)`로 조회. **주의**: Arimo(기본)는 실제 CapCut 렌더링까지 확인됐지만, 나머지 폰트들은 "유효한 등록 폰트다"까지만 확인됐지 실제 렌더링 결과를 전부 눈으로 검증한 건 아니다 — 사용자가 특정 폰트를 고르면 실제로 CapCut에서 열어서 확인해달라고 요청할 것. `style_utils.resolve_font()`는 이제 정확 일치 실패 시 alias 표 → `difflib` 근사 → Arimo 폴백 순으로 처리하고, `pipeline_log.json`의 `font_requested_vs_used`에 "요청한 이름 → 실제로 쓴 이름"을 남긴다.
+
+### 9. pycapcut의 드롭섀도우는 기본 연결되어 있지 않다 (스타일 프로필 관련)
+`text_segment.py`의 `export_material()`에서 `has_shadow`/`shadow_*` 키가 전부 주석 처리돼 있다. `stage_caption_style.py`의 `_ShadowTextSegment` 서브클래스가 이 필드를 직접 주입하고 `check_flag |= 32`를 세팅한다 — **실험적**이며 CapCut에서 실제로 그림자가 보이는지 육안 확인이 필요하다. `caption_shadow=True`일 때만 이 경로를 탄다.
+
+### 10. 텍스트 외곽선 두께 매핑이 불확실하고, 애니메이션 enum 이름이 중국어다 (스타일 프로필 관련)
+`TextBorder`는 내부에서 `width/100*0.2`로 매핑하는데 pycapcut 소스가 "此映射可能不完全正确"(완전히 정확하지 않을 수 있음)라고 표시해뒀다 — 외곽선 두께는 CapCut에서 보고 조정. 텍스트 인/아웃 애니메이션(`TextIntro`/`TextOutro`) enum 멤버 이름은 `渐显`, `向上弹入`, `打字机` 같은 중국어이고 pycapcut 버전마다 바뀔 수 있다. `style_utils.resolve_text_intro/outro`가 제네릭 이름(`fade`/`pop`/...)을 매핑하고, KeyError면 조용히 `None`(애니메이션 없음)으로 폴백한다.
 
 ## 검증 체크리스트 (매 빌드마다)
 
@@ -161,5 +186,8 @@ capcut-highlight-video-editor/
 
 ## 버전 히스토리
 
+- **v1.2.2**: 효과음 확장 — `sfx_map`(`[{"file","trigger"}]` — 효과음별로 어디에 넣을지 명시, 순환 아님) + `sfx_dir`/`sfx_trigger`(단순 케이스). trigger: cuts(클립 경계) / keywords(.md 필요) / caption_in(모든 자막) / end. `stage_sfx.add_sfx_placements((시각,파일) 쌍)`. style-profile 의 `sfx.map` 으로 자동 설정 — 배치는 스킬이 사용자에게 물어서 정함. CLI `--sfx-map`/`--sfx-dir`/`--sfx-trigger`, webapp 다중 업로드 + map JSON.
+- **v1.2.1**: 폰트 처리 개선 — `resolve_font`가 미해결 서체에 Arimo를 강제하는 대신 `None`(CapCut 기본 폰트) 반환 가능(한글에 유리). `caption_font_capcut`/`overlay_font_capcut` dict + `style_utils.RawFont` 로 CapCut draft에서 뽑은 임의 폰트 블록 주입 가능. `gap_threshold` 등 컷 호흡은 style-profile이 샷 길이에서 유도.
+- **v1.2.0**: `--style-profile` 옵션 추가 — `video-editing-style-analyzer` 스킬이 만든 `style-profile.json`을 읽어 자막(외곽선·그림자·배경박스·인/아웃 애니메이션·대문자화·정렬), 컷 호흡(`pause_gap_sec`/`max_cue_sec`), 키워드 줌 파라미터, 효과음 볼륨, 오버레이 스타일을 특정 채널 룩에 맞춘다. `PipelineConfig`에 신규 필드 ~30개 추가(전부 기존 하드코딩값을 기본값으로 → `--style-profile` 없으면 동작 불변). `style_utils`에 퍼지 폰트 매칭·`TextBorder`/`TextBackground` 빌더·제네릭 애니메이션 이름 리졸버 추가. 웹 대시보드 고급 설정에 스타일 프로필 선택/업로드 + 신규 스타일 필드. 함정 #9(섀도우 미연결)·#10(외곽선 두께 매핑·애니메이션 enum) 문서화.
 - **v1.1.0**: 텍스트 노트(.md)를 완전히 선택 사항으로 변경 — 영상+엔딩이미지만으로도 끝까지 동작(순서대로 하이라이트 채움). `md_parsing.py`가 "재료" 같은 특정 도메인 단어에 의존하지 않고, 흔한 리스트 섹션 제목을 폭넓게 인식하거나(없으면 첫 불릿/표 블록을 자동으로) 쓰도록 일반화 — 요리 영상 전용이 아니라 어떤 숏폼 영상에도 적용 가능하게 됨. 스킬명도 `capcut-recipe-video-editor` → `capcut-highlight-video-editor`로 변경.
 - **v1.0.0**: 실제 요리 영상 자동 편집 프로젝트를 처음부터 끝까지(스파이크 → 코어 파이프라인 → 웹 대시보드 → 스타일 커스터마이징 → 실사용자 파일로 검증) 구축한 과정을 일반화. macOS CapCut 연동에서 발견한 8가지 함정(파일명 불일치, 샌드박스 경로 제약, id 캐시 불일치, whisper 세그먼트 문제, gap-merge 순서, .md 파싱 견고성, 효과음 API 오해, 폰트 검증 범위)을 전부 코드와 문서에 반영. 프로젝트/브랜드명에 종속되지 않도록 코드 전체 검토 완료.

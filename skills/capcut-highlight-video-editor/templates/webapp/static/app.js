@@ -25,12 +25,13 @@ document.querySelectorAll(".dropzone").forEach((zone) => {
   const input = zone.querySelector("input[type='file']");
   const filenameEl = zone.querySelector(".dz-filename");
 
-  function showFile(file) {
-    zone.classList.toggle("filled", !!file);
-    filenameEl.textContent = file ? file.name : "";
+  function showFile() {
+    const n = input.files.length;
+    zone.classList.toggle("filled", n > 0);
+    filenameEl.textContent = n > 1 ? `${n}개 파일` : (n === 1 ? input.files[0].name : "");
   }
 
-  input.addEventListener("change", () => showFile(input.files[0]));
+  input.addEventListener("change", showFile);
 
   zone.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -42,7 +43,7 @@ document.querySelectorAll(".dropzone").forEach((zone) => {
     zone.classList.remove("drag-over");
     if (e.dataTransfer.files.length) {
       input.files = e.dataTransfer.files;
-      showFile(input.files[0]);
+      showFile();
     }
   });
 });
@@ -67,6 +68,108 @@ fetch("/api/fonts")
       }
     });
   });
+
+// Animation dropdowns (generic names — recipe_pipeline/style_utils.py resolves
+// them to CapCut enum members).
+const ANIM_IN = [["none", "없음"], ["fade", "페이드"], ["pop", "팝"], ["slide-up", "위로 슬라이드"], ["typewriter", "타자기"], ["zoom", "확대"], ["karaoke", "카라오케"]];
+const ANIM_OUT = [["none", "없음"], ["fade", "페이드"], ["scale-down", "축소"], ["slide-down", "아래로 슬라이드"]];
+function fillAnim(selector, options) {
+  document.querySelectorAll(selector).forEach((select) => {
+    for (const [value, label] of options) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = label;
+      select.appendChild(opt);
+    }
+  });
+}
+fillAnim("select.anim-in-select", ANIM_IN);
+fillAnim("select.anim-out-select", ANIM_OUT);
+
+// Style profiles: list + prefill the advanced panel from a chosen profile's
+// `applied.*` block so the user sees and can tweak the channel's look.
+const profileSelect = document.getElementById("style-profile-select");
+const profileFile = document.getElementById("style-profile-file");
+
+fetch("/api/style-profiles")
+  .then((r) => r.json())
+  .then((profiles) => {
+    for (const p of profiles) {
+      const opt = document.createElement("option");
+      opt.value = p.name;
+      opt.textContent = p.channel_name ? `${p.name} (${p.channel_name})` : p.name;
+      profileSelect.appendChild(opt);
+    }
+  })
+  .catch(() => {});
+
+function setField(name, value) {
+  if (value === undefined || value === null) return;
+  const el = form.elements[name];
+  if (!el) return;
+  if (el.type === "checkbox") el.checked = !!value;
+  else el.value = String(value);
+}
+
+function prefillFromProfile(profile) {
+  const a = (profile && profile.applied) || {};
+  const cap = a.caption || {}, ov = a.overlay || {}, pac = a.pacing || {};
+  const emph = a.caption_emphasis || {}, sfx = a.sfx || {};
+  setField("target_duration_sec", a.target_duration_sec);
+  setField("pause_gap_sec", pac.pause_gap_sec);
+  setField("max_cue_sec", pac.max_cue_sec);
+  setField("gap_threshold_sec", pac.gap_threshold_sec);
+
+  setField("caption_font", cap.font);
+  setField("caption_size", cap.size);
+  setField("caption_color", cap.color);
+  setField("caption_position", cap.position);
+  setField("caption_all_caps", String(!!cap.all_caps));
+  if (cap.outline && cap.outline.enabled) {
+    setField("caption_outline_color", cap.outline.color || "#000000");
+    setField("caption_outline_width", cap.outline.width);
+  }
+  setField("caption_shadow", String(!!(cap.shadow && cap.shadow.enabled)));
+  setField("caption_bg", String(!!(cap.background && cap.background.enabled)));
+  if (cap.background) setField("caption_bg_color", cap.background.color);
+  if (cap.animation) { setField("caption_anim_in", cap.animation.in); setField("caption_anim_out", cap.animation.out); }
+  setField("caption_zoom_trigger", emph.trigger);
+  setField("caption_zoom_scale", emph.scale);
+
+  setField("overlay_font", ov.font);
+  setField("overlay_size", ov.size);
+  setField("overlay_color", ov.color);
+  setField("overlay_position", ov.position);
+  setField("overlay_all_caps", String(!!ov.all_caps));
+  if (ov.outline && ov.outline.enabled) {
+    setField("overlay_outline_color", ov.outline.color || "#000000");
+    setField("overlay_outline_width", ov.outline.width);
+  }
+  setField("overlay_bg", String(!!(ov.background && ov.background.enabled)));
+  if (ov.animation) { setField("overlay_anim_in", ov.animation.in); setField("overlay_anim_out", ov.animation.out); }
+  setField("sfx_volume", sfx.volume);
+  setField("sfx_trigger", sfx.trigger);
+  if (Array.isArray(sfx.map) && form.elements["sfx_map"]) {
+    form.elements["sfx_map"].value = JSON.stringify(sfx.map);
+  }
+}
+
+profileSelect.addEventListener("change", () => {
+  if (!profileSelect.value) return;
+  fetch(`/api/style-profiles/${profileSelect.value}`)
+    .then((r) => r.json())
+    .then(prefillFromProfile)
+    .catch(() => {});
+});
+profileFile.addEventListener("change", () => {
+  const f = profileFile.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try { prefillFromProfile(JSON.parse(reader.result)); } catch (e) {}
+  };
+  reader.readAsText(f);
+});
 
 function renderStageList(doneKeys, messages) {
   stageList.innerHTML = "";
