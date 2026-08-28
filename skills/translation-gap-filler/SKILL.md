@@ -20,6 +20,8 @@ Chrome 자동 번역은 스크롤·클릭으로 새로 나타나는 콘텐츠(�
 
 이 폴더에는 실제로 동작하는 크롬 확장 프로그램 소스가 그대로 들어있다. 설치 방법은 `설치_사용_가이드.md` 참고.
 
+일반 사용자는 저장소 전체를 받을 필요 없이 이 폴더에 함께 커밋된 `translation-gap-filler-extension.zip` 한 개만 내려받아, 영구 보관할 위치에 압축을 풀고 그 폴더를 "압축 해제된 확장 프로그램"으로 로드하면 된다. (zip 재생성: `extension/` 내용을 `translation-gap-filler-extension/` 폴더에 담아 압축)
+
 ### 주요 기능
 
 1. **자동 시작**: 버튼 클릭 없이 페이지를 열면 바로 번역 시작, 화면 우측 상단에 "번역이가 번역 중..." 토스트로 알려줌
@@ -40,4 +42,4 @@ Chrome 기본 번역이 놓친 부분(동적 콘텐츠, iframe, 유튜브 자막
 
 ## 참고
 
-이 저장소를 포크한 뒤 `extension/` 폴더를 그대로 크롬에 로드해서 쓸 수 있다. 번역 엔진을 무료 MT 대신 LLM(자연스러운 문장, 마케팅 카피 톤 보존)으로 바꾸려면 `background.js`의 `translateOne` 함수만 API 호출로 교체하면 된다.
+이 저장소를 포크한 뒤 `extension/` 폴더(또는 배포용 `translation-gap-filler-extension.zip`)를 그대로 크롬에 로드해서 쓸 수 있다. 번역 엔진을 무료 MT 대신 LLM(자연스러운 문장, 마케팅 카피 톤 보존)으로 바꾸려면 `background.js`의 `translateOne` 함수만 API 호출로 교체하면 된다.
