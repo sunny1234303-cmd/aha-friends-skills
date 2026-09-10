@@ -290,6 +290,7 @@ Claude in Chrome 브라우저 툴(`mcp__claude-in-chrome__*`)이 있는 세션�
    ```
    (`open` 은 사용자의 기본 브라우저 새 탭에 로컬 HTML 을 띄운다 — MCP 탭 그룹 밖이라 추적은 안 되지만 사용자가 바로 본다.)
 3. `SendUserFile` 로 `report.html` 도 사용자에게 전달(`display: "render"`). 단, 세로가 매우 긴 통이미지(`detail-page-full.jpg`)는 종횡비가 극단적이라 뷰어 업로드가 400 으로 거부됨 → 슬라이스나 축소 미리보기로 대체.
+4. **외부 공유(링크)가 필요하면** — `report.html` 을 Artifact 로 발행한다(`artifact-design` 스킬 먼저 로드 → doctype/html/head/body 없이 `<title>`+`<style>`+본문만, **폰트는 Google Fonts 만**(jsdelivr @font-face 는 Artifact CSP 에서 안 뜸 — Pretendard 대신 IBM Plex Sans KR / Noto Sans KR), 3-state 테마 토큰). 발행 후 URL 을 사용자에게 주되 **Artifact 는 기본 비공개** → "페이지 우상단 Share 로 공개 링크를 켜야 로그인 없이 열린다" 를 함께 안내한다. (경쟁사 공개 마케팅 자료라 발행 자체는 문제없음 — PII·사칭·허위기록 아님.)
 
 ## Step 7: 저장된 상세페이지 파일 폴더 열기 (필수)
 
@@ -393,6 +394,7 @@ competitor-detail-page-analyzer/
 
 ## 버전 히스토리
 
+- **v1.6.1 (2026-09-11)**: Step 6-4 추가 — 외부 공유가 필요하면 `report.html` 을 Artifact 로 발행(Google Fonts 만 사용, 3-state 테마). Artifact 는 기본 비공개라 "Share 로 공개 링크 켜기" 안내 필수.
 - **v1.6.0 (2026-09-11)**: 산출물 마무리 단계 추가.
   - **Step 6**: `.md` 리포트를 HTML 보고서(`report.html`)로 변환(`design-guide.md` 디자인 시스템 준수, 단일 파일, `@media print` 포함) → `open report.html` 로 브라우저 탭에 띄운다. `mcp__claude-in-chrome__navigate` 는 `file://` 거부하므로 macOS `open` 사용.
   - **Step 7**: `open images/` 로 저장된 상세페이지 폴더를 Finder 로 연다. "경로만 안내" 금지 — 파일을 실제로 열어준다.
