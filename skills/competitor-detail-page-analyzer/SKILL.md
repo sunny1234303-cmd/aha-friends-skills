@@ -16,7 +16,7 @@ allowed-tools: Bash, Read, Write, ToolSearch, mcp__claude-in-chrome__tabs_contex
 
 # 경쟁사 상세페이지 구조 분석 스킬
 
-경쟁사 상품 URL을 받아 **상세페이지 이미지를 다운로드**하고, **구조 분석 리포트**를 만드는 End-to-End 스킬. 결과물은 항상 두 가지다 — ① 상세페이지 사진 파일, ② 구조 분석 마크다운 리포트.
+경쟁사 상품 URL(또는 카테고리/키워드)을 받아 **상세페이지 이미지를 다운로드**하고, **구조 분석 리포트**를 만드는 End-to-End 스킬. 최종 산출물은 ① 상세페이지 이미지 파일들 ② 구조 분석 마크다운(`.md`) ③ 그 내용을 정리한 HTML 보고서(`report.html`) — 그리고 **HTML 보고서는 브라우저 탭으로, 이미지 폴더는 Finder 로 직접 열어준다**(경로만 안내하고 끝내지 않는다).
 
 **실제 예시 결과물**: `example-output/estra-atobarrier365-cream-20260803/` (올리브영 에스트라 아토베리어365 크림으로 라이브 검증한 실제 산출물)
 
@@ -44,7 +44,11 @@ CAPTCHA/봇 탐지를 우회하는 자동화(예: Cloudflare 챌린지를 프로
        ↓
 [4] 구조 분석 (섹션 단위로 설득 흐름 분해)
        ↓
-[5] 구조 분석 리포트 생성 (상품별로 하나씩, 여러 개면 비교 요약도 추가)
+[5] 구조 분석 리포트(.md) 생성 (상품별로 하나씩, 여러 개면 비교 요약도 추가)
+       ↓
+[6] 같은 내용을 HTML 보고서(report.html)로 변환 → `open` 으로 브라우저 탭에 띄움
+       ↓
+[7] `open` 으로 저장된 상세페이지 이미지 폴더(images/)를 Finder 로 엶
 ```
 
 실무에서는 특정 브랜드를 콕 집기보다 **"이 카테고리에서 잘 팔리는 제품"** 을 보고 싶은 경우가 많다 (예: "여름 수분크림 출시 예정인데 잘 팔리는 브랜드들 상세페이지 분석해줘"). 이때는 Step 0부터 시작한다.
@@ -240,11 +244,19 @@ Claude in Chrome 브라우저 툴(`mcp__claude-in-chrome__*`)이 있는 세션�
 
 ### 저장 위치
 ```
+# 단일 상품
 ./10-projects/{프로젝트명}/competitor-analysis/{브랜드}-{상품명}-{YYYYMMDD}/
-├── images/           # Step 2에서 확보한 상세페이지 이미지
-└── structure-analysis.md
+├── images/                 # detail-page-full.jpg + slice-*.jpg
+├── structure-analysis.md
+└── report.html             # Step 6 — .md 를 HTML 보고서로 변환
+
+# 여러 상품 (Step 0에서 시작)
+./10-projects/{프로젝트명}/competitor-analysis/{카테고리}-베스트{N}-{YYYYMMDD}/
+├── images/{브랜드}/         # 브랜드별 detail-page-full.jpg + slice-*.jpg
+├── comparison-report.md
+└── report.html
 ```
-> 프로젝트에 맞게 경로를 조정하세요.
+> 프로젝트에 맞게 경로를 조정하세요. `images/` 는 용량이 크므로 repo `.gitignore` 에 `10-projects/*/competitor-analysis/**/images/` 를 추가하고 리포트(`.md`/`.html`)만 추적하는 걸 권장.
 
 ### 리포트 구조 (`templates/structure-analysis-template.md` 참고)
 ```markdown
@@ -262,6 +274,33 @@ Claude in Chrome 브라우저 툴(`mcp__claude-in-chrome__*`)이 있는 세션�
 
 ---
 
+## Step 6: 마크다운 리포트 → HTML 보고서 변환 + 브라우저 탭으로 열기 (필수)
+
+`.md` 리포트를 만든 뒤, **반드시 같은 내용을 HTML 보고서로 정리해서 브라우저 탭으로 띄운다.** 경로만 안내하고 끝내지 않는다.
+
+1. **HTML 작성 규칙**
+   - 워크스페이스에 `00-system/03-guides/design-guide.md` 가 있으면 그 디자인 시스템(무드·컬러·폰트·구분선 규칙)을 그대로 따른다. 없으면 "문서형 미니멀"(흰 배경, 산세리프, 굵은 실선=섹션 경계·얇은 선=항목 구분, accent 색 1개, 박스/뱃지 남발 금지)로 간다.
+   - **단일 파일**로: CSS 전부 `<style>` 인라인, 외부 의존은 웹폰트 정도만(`@font-face` CDN). 이미지 임베드 불필요(리포트는 텍스트·표 중심).
+   - 담을 것: 헤더(제목·분석일·대상) → 대상 표 → 공통 관찰 → **브랜드별 구조 흐름**(섹션 흐름 다이어그램은 `<pre>` monospace 블록, 임상 근거는 `<table>`) → 비교표 → 적용 포인트(가져올 것/차별화/하지 말 것) → 부록. 즉 `.md` 와 동일 구조.
+   - `@media print` 규칙 넣어 인쇄/PDF 도 깨지지 않게(테이블·다이어그램 `break-inside: avoid`).
+   - 파일명 `report.html`, 저장 위치는 `.md` 와 같은 폴더.
+2. **탭으로 열기** — `mcp__claude-in-chrome__navigate` 는 `file://` URL 을 거부한다(실측). macOS 기본 브라우저로 여는 게 맞다:
+   ```bash
+   open "<리포트폴더>/report.html"
+   ```
+   (`open` 은 사용자의 기본 브라우저 새 탭에 로컬 HTML 을 띄운다 — MCP 탭 그룹 밖이라 추적은 안 되지만 사용자가 바로 본다.)
+3. `SendUserFile` 로 `report.html` 도 사용자에게 전달(`display: "render"`). 단, 세로가 매우 긴 통이미지(`detail-page-full.jpg`)는 종횡비가 극단적이라 뷰어 업로드가 400 으로 거부됨 → 슬라이스나 축소 미리보기로 대체.
+
+## Step 7: 저장된 상세페이지 파일 폴더 열기 (필수)
+
+이미지 결과물도 경로만 알려주지 말고 **Finder 로 폴더를 직접 연다**:
+```bash
+open "<리포트폴더>/images"
+```
+여러 상품이면 `images/` 하위에 브랜드별 폴더가 들어있으므로 `images/` 를 연다.
+
+---
+
 ## 사용 예시
 
 ```
@@ -272,7 +311,8 @@ Claude:
 2. 상품설명 탭 → 더보기 클릭 → data-src 이미지 URL 수집 → canvas 이어붙이기 1회 다운로드 (서드파티 CDN이면 그 CDN 탭에서 fetch)
 3. 통이미지를 6~10등분 슬라이스해서 순서대로 Read
 4. 섹션별 구조 분해 → structure-analysis.md 작성
-5. 결과물 두 가지(이미지 + 리포트) 경로 안내
+5. structure-analysis.md → report.html 변환 → `open report.html` (브라우저 탭)
+6. `open images/` (Finder) + SendUserFile 로 report.html 전달
 ```
 
 ```
@@ -281,8 +321,10 @@ Claude:
 Claude:
 1. Step 0: 올리브영에서 "수분크림" 검색 → 판매순 정렬 → 상위 10개 브랜드/URL 확보
 2. 사용자에게 목록 보여주고 몇 개 분석할지 확인 (브랜드 다양성 우선 추천)
-3. 확정된 URL마다 Step 1~5 반복
-4. 상품별 리포트 + (여러 개면) 공통 패턴 비교 요약 추가
+3. 확정된 URL마다 Step 1~4 반복 (상품마다 섹션 구조 분해)
+4. 파일 1개에 "브랜드별 구조 흐름" + "핵심 전략 비교표" 순서로 comparison-report.md 작성
+5. comparison-report.md → report.html 변환 → `open report.html` (브라우저 탭)
+6. `open images/` (Finder) — 브랜드별 폴더가 그 안에 있음
 ```
 
 ---
@@ -340,7 +382,7 @@ competitor-detail-page-analyzer/
 │   └── detail-page-scraper.py        # 헤드리스 다운로더 (Cloudflare 없는 사이트 전용)
 ├── templates/
 │   └── structure-analysis-template.md
-└── example-output/
+└── example-output/                   # (repo에는 미포함 — 워크스페이스 프로젝트 폴더 참조)
     ├── estra-atobarrier365-cream-20260803/   # 단일 상품 분석 예시
     │   ├── images/detail-page-full.jpg
     │   └── structure-analysis.md
@@ -351,6 +393,9 @@ competitor-detail-page-analyzer/
 
 ## 버전 히스토리
 
+- **v1.6.0 (2026-09-11)**: 산출물 마무리 단계 추가.
+  - **Step 6**: `.md` 리포트를 HTML 보고서(`report.html`)로 변환(`design-guide.md` 디자인 시스템 준수, 단일 파일, `@media print` 포함) → `open report.html` 로 브라우저 탭에 띄운다. `mcp__claude-in-chrome__navigate` 는 `file://` 거부하므로 macOS `open` 사용.
+  - **Step 7**: `open images/` 로 저장된 상세페이지 폴더를 Finder 로 연다. "경로만 안내" 금지 — 파일을 실제로 열어준다.
 - **v1.5.0 (2026-09-11)**: 올리브영 "수분세럼" 판매순 상위 4종(아누아/달바/넘버즈인/토리든)으로 Step 0~5 재검증하며 Step 2-B 다운로드 로직 대폭 보강.
   - **45초 CDP 타임아웃**: 이미지 30장+ 를 `for await` 로 받으면 `javascript_tool` 이 죽음 → `window.__job` async IIFE + `Promise.all` 병렬 fetch + `computer` `wait` 폴링 패턴으로 전환
   - **서드파티 CDN CORS**: 브랜드 자체 CDN(`dalba.speedgabia.com`, `torriden.jpg1.kr`)은 올리브영 origin 에서 fetch 시 CORS 차단 → 그 CDN 실제 이미지 URL 로 새 탭을 열어 same-origin fetch. `image.oliveyoung.co.kr`·`gi.esmplus.com` 은 ACAO `*`
