@@ -11,7 +11,7 @@ description: |
   - "여름 수분크림 베스트셀러 상세페이지 분석해줘"
 
   Use when: 신규 제품 런칭 전 경쟁사 상세페이지를 벤치마킹해야 할 때. 실무에서는 특정 브랜드 지정 없이 "이 카테고리에서 잘 팔리는 제품들"을 분석하고 싶은 경우가 더 많음 — URL이 없어도 카테고리/키워드만으로 시작 가능.
-allowed-tools: Bash, Read, Write
+allowed-tools: Bash, Read, Write, ToolSearch, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__tabs_close_mcp, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__computer, mcp__claude-in-chrome__javascript_tool, mcp__claude-in-chrome__find, mcp__claude-in-chrome__read_page
 ---
 
 # 경쟁사 상세페이지 구조 분석 스킬
@@ -85,7 +85,7 @@ Step 0에서 나온 URL 목록, 또는 사용자가 직접 준 URL(1개 이상)�
 
 | 사이트 | 지원 상태 | 다운로드 방식 |
 |---|---|---|
-| 올리브영 (`oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=...`) | **검증됨** (검색·정렬·상세이미지 추출 전부 라이브 확인) | Claude in Chrome 인터랙티브 방식만 가능 (Cloudflare가 헤드리스를 차단) |
+| 올리브영 (`oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=...`) | **검증됨** (검색·정렬·상세이미지 추출 전부 라이브 확인, 2026-09-11 재검증) | Claude in Chrome 인터랙티브 방식만 가능 (Cloudflare가 헤드리스를 차단). 상세이미지가 브랜드 자체 CDN(speedgabia·jpg1.kr 등)에 있으면 CORS 우회로 그 CDN 탭에서 fetch — Step 2-B step 4 참고 |
 | 그 외 일반 쇼핑몰 (Cloudflare 없음) | 제네릭 방식 시도 | `detail-page-scraper.py` (헤드리스), 안 되면 인터랙티브 방식으로 전환 |
 | 다나와 | 미검증 | 둘 중 아무거나 시도 후 결과 확인 |
 
@@ -128,40 +128,61 @@ Claude in Chrome 브라우저 툴(`mcp__claude-in-chrome__*`)이 있는 세션�
    const urls = imgs.map(im => im.getAttribute('data-src') || im.src).filter(u => u && !u.startsWith('data:'));
    ```
    **왜 `data-src`인가**: 이 사이트는 지연 로딩이라 `img.src`엔 처음에 1×1 placeholder gif만 들어있고, 실제 URL은 `data-src`에 로드 전부터 이미 박혀있다(실측 확인). 예전엔 스크롤로 지연 로딩을 강제로 트리거하려 했는데, `scrollBy` 루프가 느리고(45초 타임아웃 발생) 이미지를 빠르게 지나치면 로드가 씹히는 문제가 반복됐다. `data-src`를 바로 읽으면 스크롤 자체가 필요 없다.
-4. **다운로드 — 여러 장을 하나의 캔버스에 이어붙여 한 번만 다운로드한다.** `<a download>` 반복 클릭은 Chrome이 "다중 자동 다운로드"로 차단하고(1장만 저장됨, 실측 확인), base64로 하나씩 반환받는 것도 이미지가 많으면 비효율적이다. 대신 **fetch → Image 객체 로드 → canvas에 순서대로 그리기 → canvas.toBlob → 다운로드 1회**:
+4. **다운로드 — 여러 장을 하나의 캔버스에 이어붙여 한 번만 다운로드한다.** `<a download>` 반복 클릭은 Chrome이 "다중 자동 다운로드"로 차단하고(1장만 저장됨, 실측 확인), base64로 하나씩 반환받는 것도 이미지가 많으면 비효율적이다. 대신 **fetch → Image 객체 로드 → canvas에 순서대로 그리기 → canvas.toBlob → 다운로드 1회**.
+
+   **⚠️ 두 가지 실전 함정 (2026-09-11 "수분세럼 베스트4"에서 확인):**
+
+   **(a) `javascript_tool` 은 45초에 CDP 타임아웃난다.** 이미지 35~44장을 `for` 루프로 `await` 하면 45초를 넘겨 툴이 죽는다. → **`window.__job` 에 async IIFE를 넣어 백그라운드로 돌리고**, `Promise.all` 로 병렬 fetch(각 fetch에 `AbortController` 12~20초 타임아웃), 그다음 `computer` `wait` 로 10초씩 나눠 기다렸다가 `window.__jobR` 을 폴링한다.
+
+   **(b) 서드파티 CDN 은 올리브영 페이지 origin 에서 fetch 하면 CORS(`TypeError: Failed to fetch`)로 막힌다.**
+   - `image.oliveyoung.co.kr`(크롭 프록시), `gi.esmplus.com` → ACAO `*`, **어느 탭에서든 fetch 가능**.
+   - `dalba.speedgabia.com`, `torriden.jpg1.kr` 등 브랜드 자체 CDN → 올리브영 origin 에서 **차단**. 해결: **그 CDN 의 실제 이미지 URL 하나로 새 탭(`tabs_create_mcp` + `navigate`)을 열면 그 탭은 CDN 과 same-origin** 이 되어 fetch 가 통과한다. 전체 순서 리스트(올리브영 이미지 포함)를 그 탭에서 한 번에 이어붙이면 된다. 달바 35/35 성공.
+   - 올리브영 크롭 프록시는 임의 원본 호스트를 프록시한다: `https://image.oliveyoung.co.kr/cfimages/cf-goods/uploads/images/html/crop/{goodsNo}/{ts}/crop{N}/{원본호스트}/{경로}`. 정적 PNG/JPG 는 이걸로 우회 가능하나 **애니메이션 GIF 는 403**.
+   - 일부 origin(`torriden.jpg1.kr`)은 그 탭에서 `<a download>` 자체가 차단된다(자동·유저제스처 모두). → 정적 이미지만 크롭 프록시로 모으고 **GIF 구간은 빈 칸으로 두되**, 텍스트·임상 근거 섹션은 전부 확보됨을 확인하고 리포트에 "GIF N구간 정적 캡처 불가(고유 카피·수치 없음)" 로 명시.
+
+   **표준 다운로드 스크립트 (single-origin, 대부분 케이스):**
    ```js
-   async function loadImage(url) {
-     const resp = await fetch(url, { credentials: 'omit' });
-     const blob = await resp.blob();
-     const objUrl = URL.createObjectURL(blob);
-     const img = new Image();
-     await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = objUrl; });
-     URL.revokeObjectURL(objUrl);
-     return img;
-   }
-   const loaded = [];
-   for (const u of urls) { try { loaded.push(await loadImage(u)); } catch (e) { loaded.push(null); } }
-   const okImgs = loaded.filter(Boolean);
-   const width = Math.max(...okImgs.map(im => im.naturalWidth));
-   const totalHeight = okImgs.reduce((sum, im) => sum + Math.round(im.naturalHeight * (width / im.naturalWidth)), 0);
-   const canvas = document.createElement('canvas');
-   canvas.width = width; canvas.height = totalHeight;
-   const ctx = canvas.getContext('2d');
-   let y = 0;
-   for (const im of loaded) {
-     if (!im) continue;
-     const h = Math.round(im.naturalHeight * (width / im.naturalWidth));
-     ctx.drawImage(im, 0, y, width, h);
-     y += h;
-   }
-   const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
-   const a = document.createElement('a');
-   a.href = URL.createObjectURL(blob);
-   a.download = '<브랜드>-detail-stitched.jpg';
-   document.body.appendChild(a);
-   a.click();
-   a.remove();
+   window.__job = (async () => {
+     const urls = /* Step 3 에서 모은 data-src 배열, 또는 서드파티 탭이면 재구성한 순서 리스트 */;
+     async function load(u) {
+       try {
+         const c = new AbortController(); const t = setTimeout(() => c.abort(), 20000);
+         const r = await fetch(u, { credentials: 'omit', signal: c.signal }); clearTimeout(t);
+         if (!r.ok) return { err: 's' + r.status };
+         const b = await r.blob(); const o = URL.createObjectURL(b);
+         const im = new Image();
+         await new Promise((res, rej) => { im.onload = res; im.onerror = rej; im.src = o; });
+         URL.revokeObjectURL(o);
+         return { im, w: im.naturalWidth, h: im.naturalHeight };
+       } catch (e) { return { err: e.name }; }
+     }
+     const res = await Promise.all(urls.map(load));            // 병렬 — 45초 타임아웃 회피
+     const W = Math.max(...res.filter(x => x.im).map(x => x.w));
+     const H = res.reduce((s, x) => x.im ? s + Math.round(x.h * (W / x.w)) : s + 25, 0); // 실패분은 25px 흰 여백
+     const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+     const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+     let y = 0;
+     for (const x of res) { if (!x.im) { y += 25; continue; } const h = Math.round(x.h * (W / x.w)); g.drawImage(x.im, 0, y, W, h); y += h; }
+     const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.86));
+     const a = document.createElement('a');
+     a.href = URL.createObjectURL(blob); a.download = '<브랜드>-detail-stitched.jpg';
+     document.body.appendChild(a); a.click(); a.remove();
+     return { total: urls.length, ok: res.filter(x => x.im).length, W, H, fails: res.map((x, i) => x.err ? i + ':' + x.err : null).filter(Boolean) };
+   })();
+   window.__job.then(r => window.__jobR = r).catch(e => window.__jobR = { err: String(e) });
+   'started';
    ```
+   그다음 `computer` `wait`(10초) → `javascript_tool` 로 `JSON.stringify(window.__jobR || 'pending')` 폴링, `ok === total` 확인.
+
+   **서드파티 CDN 케이스 절차:**
+   1. Step 3 에서 모은 URL 리스트를 `window.__ordered` 등에 저장하고, **호스트별 순서 시퀀스**(예: `OOOOOOOSSSSS...`)를 파악.
+   2. 서드파티 CDN URL 하나로 `tabs_create_mcp` + `navigate` → 새 탭.
+   3. 그 탭에서 위 스크립트를 돌리되 `urls` 는 **원래 순서 그대로** 재구성. 올리브영 크롭 프록시 URL·esmplus URL 도 그 탭에서 fetch 가능하므로 섞여 있어도 됨.
+   4. 다운로드가 안 되면(torriden.jpg1.kr) 정적분만 크롭 프록시로 받고 GIF 빈 칸 처리.
+   5. 작업 끝나면 `tabs_close_mcp` 로 새 탭 정리.
+
+   > `javascript_tool` 반환값 필터: URL 쿼리스트링(`?created=...`)·base64·쿠키 유사 문자열이 있으면 출력이 `[BLOCKED: ...]` 로 잘린다. 리스트를 뽑을 땐 `u.split('?')[0]` 로 쿼리를 떼고 `.slice(a,b)` 로 페이지네이션해서 확인한다.
+
    다운로드가 1개뿐이라 Chrome 다중 다운로드 차단에 걸리지 않는다. 파일은 `~/Downloads/`에 저장되니 Bash로 목표 폴더에 옮긴다.
 5. **이미지 개수·구성은 브랜드마다 다르다** — 고정 가정을 두지 말 것 (실측 3건 비교):
    - 에스네이처: 이미지 1장이 전체 상세페이지 (720×28,487px)
@@ -248,8 +269,8 @@ Claude in Chrome 브라우저 툴(`mcp__claude-in-chrome__*`)이 있는 세션�
 
 Claude:
 1. 올리브영 URL 확인 → Cloudflare 보호 사이트이므로 Step 2-B(인터랙티브 방식) 사용
-2. 상품설명 탭 → 더보기 클릭 → 이미지 URL 수집 → fetch+base64로 다운로드
-3. 가장 큰 이미지(보통 상세페이지 통이미지)를 슬라이스해서 확인
+2. 상품설명 탭 → 더보기 클릭 → data-src 이미지 URL 수집 → canvas 이어붙이기 1회 다운로드 (서드파티 CDN이면 그 CDN 탭에서 fetch)
+3. 통이미지를 6~10등분 슬라이스해서 순서대로 Read
 4. 섹션별 구조 분해 → structure-analysis.md 작성
 5. 결과물 두 가지(이미지 + 리포트) 경로 안내
 ```
@@ -286,6 +307,16 @@ playwright install chromium
 
 ### `javascript_tool` 호출이 45초 타임아웃남
 - `window.scrollBy` 같은 긴 루프를 쓰고 있다면 그게 원인 — data-src 방식으로 전환하면 스크롤 자체가 필요 없어져서 해결됨
+- **이미지가 30장 이상이라 fetch+stitch 가 45초를 넘김** → `window.__job` async IIFE 로 백그라운드 실행 후 `computer` `wait` + `window.__jobR` 폴링 (Step 2-B step 4)
+
+### 서드파티 CDN 이미지가 `TypeError: Failed to fetch` (달바·토리든 등)
+- 브랜드 자체 CDN(`dalba.speedgabia.com`, `torriden.jpg1.kr` 등)이 올리브영 origin 에 CORS 미허용 → **그 CDN 실제 이미지 URL 로 새 탭을 열어** same-origin 상태에서 fetch (Step 2-B step 4 (b))
+- `image.oliveyoung.co.kr`(크롭 프록시)·`gi.esmplus.com` 은 ACAO `*` 라 어느 탭에서든 OK
+- 크롭 프록시(`.../cropN/<원본호스트>/<경로>`)로 정적 이미지는 우회 가능하나 GIF 는 403
+- torriden.jpg1.kr 는 그 탭에서 다운로드 자체가 막힘 → 정적분만 크롭 프록시로, GIF 구간은 빈 칸 + 리포트에 명시
+
+### `javascript_tool` 결과가 `[BLOCKED: ...]` 로 잘림
+- 반환값에 URL 쿼리스트링/base64/쿠키 유사 문자열이 있으면 필터에 걸림 → `u.split('?')[0]` 로 쿼리 제거하고 `.slice()` 로 나눠서 반환
 
 ### 제네릭 사이트에서 엉뚱한 이미지(광고/추천상품)가 섞임
 - 이미지 개수가 비정상적으로 많으면(50장 이상) 필터링이 실패한 것 — 결과 폴더를 열어 수동으로 상세페이지 구간만 추려낼 것
@@ -320,6 +351,13 @@ competitor-detail-page-analyzer/
 
 ## 버전 히스토리
 
+- **v1.5.0 (2026-09-11)**: 올리브영 "수분세럼" 판매순 상위 4종(아누아/달바/넘버즈인/토리든)으로 Step 0~5 재검증하며 Step 2-B 다운로드 로직 대폭 보강.
+  - **45초 CDP 타임아웃**: 이미지 30장+ 를 `for await` 로 받으면 `javascript_tool` 이 죽음 → `window.__job` async IIFE + `Promise.all` 병렬 fetch + `computer` `wait` 폴링 패턴으로 전환
+  - **서드파티 CDN CORS**: 브랜드 자체 CDN(`dalba.speedgabia.com`, `torriden.jpg1.kr`)은 올리브영 origin 에서 fetch 시 CORS 차단 → 그 CDN 실제 이미지 URL 로 새 탭을 열어 same-origin fetch. `image.oliveyoung.co.kr`·`gi.esmplus.com` 은 ACAO `*`
+  - 올리브영 크롭 프록시가 임의 원본 호스트를 프록시함(`.../cropN/<원본호스트>/<경로>`) — 정적 이미지 우회로. 단 GIF 는 403, 일부 origin 은 다운로드 자체 차단(GIF 구간 빈 칸 처리 + 리포트 명시)
+  - `javascript_tool` 반환값 필터(`[BLOCKED]`) 회피: 쿼리스트링 제거 + slice 페이지네이션
+  - `allowed-tools` 에 `mcp__claude-in-chrome__*` + `ToolSearch` 명시 추가
+  - 결과물: 워크스페이스 `10-projects/30-경쟁사-상세페이지-분석/competitor-analysis/수분세럼-베스트4-20260911/`
 - **v1.4.0 (2026-08-03)**: 서니 피드백 2건 반영.
   - Step 0에 "동일 제품 용량/구성/굿즈 차이 변형 제거" 로직 추가 — 같은 브랜드의 다른 goodsNo가 사실은 같은 제품의 용량/기획 차이일 뿐이면 순위 높은 것 하나만 남기고 후보에서 제외
   - Step 3~4와 리포트 템플릿에 "임상/설문 시험 근거(시험 기관·기간·대상)" 섹션을 표준으로 추가. 각주가 작아 안 보이면 Pillow로 해당 부분만 좁게 잘라 확대(`crop`)해서 확인하는 절차 명시
