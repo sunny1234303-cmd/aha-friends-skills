@@ -26,11 +26,29 @@ allowed-tools: Read, Write, mcp__n8n__search_templates, mcp__n8n__get_template, 
    N8N_API_URL=http://localhost:5678
    N8N_API_KEY=발급받은키
    ```
-4. `.mcp.json`의 `${N8N_API_URL}`/`${N8N_API_KEY}` 확장은 **셸 프로세스 환경변수**에서만 값을 읽는다 (Claude Code가 `.env` 파일을 자동으로 읽어주지 않음) — 그래서 `~/.zshrc`(또는 `~/.bashrc`)에 이 `.env`를 소싱하는 한 줄을 추가해야 한다:
+4. 프로젝트 루트(`.env`를 채운 그 프로젝트)에 `.mcp.json`이 없거나, 있어도 `n8n` 서버 항목이 없으면 아래 블록을 추가한다(다른 `mcpServers` 항목이 이미 있으면 그 객체 안에 `"n8n"` 키만 얹는다):
+   ```json
+   {
+     "mcpServers": {
+       "n8n": {
+         "command": "npx",
+         "args": ["-y", "n8n-mcp"],
+         "env": {
+           "MCP_MODE": "stdio",
+           "LOG_LEVEL": "error",
+           "DISABLE_CONSOLE_OUTPUT": "true",
+           "N8N_API_URL": "${N8N_API_URL}",
+           "N8N_API_KEY": "${N8N_API_KEY}"
+         }
+       }
+     }
+   }
+   ```
+5. `.mcp.json`의 `${N8N_API_URL}`/`${N8N_API_KEY}` 확장은 **셸 프로세스 환경변수**에서만 값을 읽는다 (Claude Code가 `.env` 파일을 자동으로 읽어주지 않음) — 그래서 `~/.zshrc`(또는 `~/.bashrc`)에 이 `.env`를 소싱하는 한 줄을 추가해야 한다:
    ```
    set -a; source <프로젝트 경로>/.claude/skills/n8n-workflow-builder/.env; set +a
    ```
-5. `source ~/.zshrc` 또는 새 터미널에서 Claude Code 재시작 → 처음 이 스킬을 쓸 때 `n8n` MCP 서버 연결 승인 프롬프트가 뜨면 승인
+6. `source ~/.zshrc` 또는 새 터미널에서 Claude Code 재시작 → 처음 이 스킬을 쓸 때 `n8n` MCP 서버 연결 승인 프롬프트가 뜨면 승인
 
 이 스킬 폴더나 프로젝트 저장소 어디에도 API 키를 **하드코딩(코드/문서에 직접 기입)**하지 않는다 — 항상 이 `.env` 파일에서만 읽는다.
 
